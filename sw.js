@@ -1,13 +1,13 @@
-const CACHE = 'zhijian-pwa-v10';
+const CACHE = 'zhijian-pwa-v11';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './assets/index-BrDmtj2V.js',
   './assets/index-Dn82YseF.css',
-  './home-collage.png',
-  './home-collage-2.png',
-  './landscape-easter-egg.jpg',
+  './home-collage.webp',
+  './home-collage-2.webp',
+  './landscape-easter-egg.webp',
   './pwa-icon-192.png',
   './pwa-icon-512.png'
 ];
@@ -26,8 +26,6 @@ self.addEventListener('activate', event => {
     const keys = await caches.keys();
     await Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)));
     await self.clients.claim();
-    const windows = await self.clients.matchAll({ type: 'window' });
-    await Promise.allSettled(windows.map(client => client.navigate(client.url)));
   })());
 });
 
