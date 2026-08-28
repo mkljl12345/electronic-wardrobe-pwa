@@ -1,4 +1,4 @@
-const CACHE = 'zhijian-pwa-v8';
+const CACHE = 'zhijian-pwa-v9';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const APP_SHELL = [
   './assets/index-Dn82YseF.css',
   './home-collage.png',
   './home-collage-2.png',
+  './landscape-easter-egg.jpg',
   './pwa-icon-192.png',
   './pwa-icon-512.png'
 ];
