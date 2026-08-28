@@ -25,6 +25,7 @@
       .picker-item:disabled{cursor:not-allowed;opacity:.58}.picker-item:disabled>span{background:#6f766f!important;color:#fff}
       .add-modal .submit{position:sticky;bottom:0;z-index:2;box-shadow:0 -10px 18px var(--paper)}
       .landscape-easter-egg{display:none}
+      .pwa-update-prompt{position:absolute;z-index:20;top:calc(14px + env(safe-area-inset-top));right:14px;border:1px solid #ffffff80;border-radius:999px;background:#172a22d9;color:#fff;padding:8px 12px;box-shadow:0 6px 18px #0003;backdrop-filter:blur(10px);font-size:9px;letter-spacing:.4px}.pwa-update-prompt:disabled{opacity:.72}
       @media (orientation:landscape) and (max-height:600px) and (pointer:coarse){
         .landscape-easter-egg{display:block;position:fixed;z-index:1000;inset:0;background:#112a33}
         .landscape-easter-egg img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 58%}
@@ -65,7 +66,34 @@
     <div id="root"></div>
     <div class="landscape-easter-egg" aria-hidden="true"><img src="./landscape-easter-egg.jpg" alt=""></div>
     <script>
-      if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').then(registration => registration.update()));
+      (() => {
+        const APP_VERSION = '10';
+        let availableVersion = '', checking = false;
+        const showUpdate = () => {
+          const home = document.querySelector('.seasonal-home');
+          if (!home || !availableVersion || home.querySelector('.pwa-update-prompt')) return;
+          const button = document.createElement('button');
+          button.className = 'pwa-update-prompt';
+          button.textContent = '发现新版本，立即更新';
+          button.addEventListener('click', async () => {
+            button.disabled = true;button.textContent = '正在更新…';
+            let reloading = false;
+            const reload = () => {if (reloading) return;reloading = true;const url = new URL(location.href);url.searchParams.set('_v', availableVersion);location.replace(url)};
+            navigator.serviceWorker?.addEventListener('controllerchange', reload, {once:true});
+            try {const registration = await navigator.serviceWorker?.getRegistration();await registration?.update();registration?.waiting?.postMessage({type:'SKIP_WAITING'})} catch {}
+            window.setTimeout(reload, 1800);
+          });
+          home.appendChild(button);
+        };
+        const checkVersion = async () => {
+          if (checking) return;checking = true;
+          try {const response = await fetch(`./version.json?t=${Date.now()}`, {cache:'no-store'});const data = await response.json();availableVersion = String(data.version) !== APP_VERSION ? String(data.version) : '';showUpdate()} catch {} finally {checking = false}
+        };
+        if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').then(registration => registration.update()).finally(checkVersion));
+        window.addEventListener('pageshow', checkVersion);
+        document.addEventListener('visibilitychange', () => {if (document.visibilityState === 'visible') checkVersion()});
+        window.zhijianShowUpdate = showUpdate;
+      })();
       (() => {
         const builtins = ['./home-collage.png', './home-collage-2.png'];
         const getLibrary = () => [...builtins, ...JSON.parse(localStorage.getItem('zhijian-opening-custom') || '[]')];
@@ -95,7 +123,7 @@
         const openLibrary = () => {const photos=getLibrary();const overlay=document.createElement('div');overlay.className='opening-library-overlay';overlay.innerHTML='<section class="opening-library"><div class="opening-library-head"><h2>开屏照片存储库</h2><button aria-label="关闭">×</button></div><div class="opening-photo-grid"></div><label class="opening-upload">＋ 上传新照片<input type="file" accept="image/*"></label></section>';const grid=overlay.querySelector('.opening-photo-grid');photos.forEach((src,i)=>{const button=document.createElement('button');button.className=`opening-photo${homeImage===src?' active':''}`;button.innerHTML=`<img src="${src}"><span>照片 ${String(i+1).padStart(2,'0')}</span>`;button.addEventListener('click',()=>{localStorage.setItem('zhijian-opening-mode','fixed');localStorage.setItem('zhijian-opening-fixed',String(i));homeImage=src;replaceHomeImage();overlay.remove()});grid.appendChild(button)});overlay.querySelector('.opening-library-head button').addEventListener('click',()=>overlay.remove());overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});overlay.querySelector('input').addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');canvas.width=720;canvas.height=1200;const ctx=canvas.getContext('2d');const scale=Math.max(720/img.width,1200/img.height);const w=img.width*scale,h=img.height*scale;ctx.drawImage(img,(720-w)/2,(1200-h)/2,w,h);const custom=JSON.parse(localStorage.getItem('zhijian-opening-custom')||'[]');custom.push(canvas.toDataURL('image/jpeg',.82));localStorage.setItem('zhijian-opening-custom',JSON.stringify(custom));overlay.remove();openLibrary()};img.src=reader.result};reader.readAsDataURL(file)});document.body.appendChild(overlay)};
         const setReactRange=(input,value)=>{const next=Math.max(Number(input.min),Math.min(Number(input.max),value));Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,String(next));input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}))};
         const enableCropGestures=()=>{const frame=document.querySelector('.crop-frame');if(!frame||frame.dataset.gestures==='on')return;const ranges=[...frame.closest('.crop-modal').querySelectorAll('input[type="range"]')];if(ranges.length<3)return;const [zoomInput,xInput,yInput]=ranges;frame.dataset.gestures='on';const tip=document.createElement('p');tip.className='crop-gesture-tip';tip.textContent='单指拖动位置 · 双指捏合缩放';frame.after(tip);let state=null;const distance=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);const center=t=>({x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2});frame.addEventListener('touchstart',e=>{if(e.touches.length===1)state={kind:'drag',x:e.touches[0].clientX,y:e.touches[0].clientY,baseX:Number(xInput.value),baseY:Number(yInput.value)};else if(e.touches.length>=2)state={kind:'pinch',distance:distance(e.touches),center:center(e.touches),zoom:Number(zoomInput.value),baseX:Number(xInput.value),baseY:Number(yInput.value)}},{passive:true});frame.addEventListener('touchmove',e=>{if(!state)return;e.preventDefault();if(state.kind==='drag'&&e.touches.length===1){setReactRange(xInput,state.baseX+e.touches[0].clientX-state.x);setReactRange(yInput,state.baseY+e.touches[0].clientY-state.y)}else if(state.kind==='pinch'&&e.touches.length>=2){const point=center(e.touches);setReactRange(zoomInput,state.zoom*distance(e.touches)/state.distance);setReactRange(xInput,state.baseX+point.x-state.center.x);setReactRange(yInput,state.baseY+point.y-state.center.y)}},{passive:false});frame.addEventListener('touchend',e=>{if(e.touches.length===0)state=null},{passive:true})};
-        const observer = new MutationObserver(() => {replaceHomeImage();renderSettings();enableCropGestures()});observer.observe(document.getElementById('root'), { childList:true, subtree:true });replaceHomeImage();renderSettings();enableCropGestures();
+        const observer = new MutationObserver(() => {replaceHomeImage();renderSettings();enableCropGestures();window.zhijianShowUpdate?.()});observer.observe(document.getElementById('root'), { childList:true, subtree:true });replaceHomeImage();renderSettings();enableCropGestures();window.zhijianShowUpdate?.();
       })();
     </script>
   </body>

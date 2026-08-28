@@ -1,4 +1,4 @@
-const CACHE = 'zhijian-pwa-v9';
+const CACHE = 'zhijian-pwa-v10';
 const APP_SHELL = [
   './',
   './index.html',
@@ -31,9 +31,17 @@ self.addEventListener('activate', event => {
   })());
 });
 
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
+  if (url.pathname.endsWith('/version.json')) {
+    event.respondWith(fetch(event.request, { cache: 'no-store' }));
+    return;
+  }
   const freshFirst = url.origin === location.origin &&
     (event.request.mode === 'navigate' || ['script', 'style'].includes(event.request.destination));
   if (freshFirst) {
