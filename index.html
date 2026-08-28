@@ -59,7 +59,7 @@
   <body>
     <div id="root"></div>
     <script>
-      if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+      if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').then(registration => registration.update()));
       (() => {
         const builtins = ['./home-collage.png', './home-collage-2.png'];
         const getLibrary = () => [...builtins, ...JSON.parse(localStorage.getItem('zhijian-opening-custom') || '[]')];
