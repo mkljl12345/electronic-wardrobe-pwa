@@ -1,4 +1,4 @@
-const CACHE = 'zhijian-pwa-v19';
+const CACHE = 'zhijian-pwa-v20';
 const APP_SHELL = [
   './',
   './index.html',
