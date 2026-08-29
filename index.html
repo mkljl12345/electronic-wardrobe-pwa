@@ -17,7 +17,7 @@
       .seasonal-home .season-copy{display:none!important}
       .opening-settings{margin:34px 0 30px;padding-top:28px;border-top:1px solid #c8c9c2;color:var(--olive)}
       .opening-settings small{font-size:8px;letter-spacing:2px;color:var(--clay)}.opening-settings h2{margin:8px 0;font:600 30px 'Noto Serif SC'}.opening-settings p{margin:0 0 18px;color:#747a75;font-size:11px;line-height:1.7}
-      .opening-mode{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.opening-mode button{height:42px;border:1px solid #c4c7c2;border-radius:12px;background:transparent;color:var(--olive);font-size:10px}.opening-mode button.active{background:var(--olive);color:white;border-color:var(--olive)}
+      .opening-mode{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.opening-mode button{height:42px;border:1px solid #c4c7c2;border-radius:12px;background:transparent;color:var(--olive);font-size:10px}.opening-mode button.active{background:var(--olive);color:white;border-color:var(--olive)}
       .opening-library-entry{width:100%;height:54px;margin-top:14px;padding:0 15px;border:1px solid #c4c7c2;border-radius:15px;background:transparent;color:var(--olive);display:flex;align-items:center;justify-content:space-between;font-size:11px}.opening-library-entry b{font-size:18px}
       .opening-library-overlay{position:fixed;z-index:140;inset:0;background:#17231c88;display:flex;align-items:flex-end;backdrop-filter:blur(5px)}.opening-library{width:100%;max-height:78svh;padding:18px 18px calc(22px + env(safe-area-inset-bottom));border-radius:24px 24px 0 0;background:#f3f0e9;overflow:auto}.opening-library-head{display:flex;align-items:center;justify-content:space-between}.opening-library-head h2{margin:0;font:600 24px 'Noto Serif SC'}.opening-library-head button{width:38px;height:38px;border:0;background:none;font-size:24px}.opening-photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.opening-photo{position:relative;padding:0;border:3px solid transparent;border-radius:14px;overflow:hidden;background:#ddd}.opening-photo.active{border-color:var(--olive)}.opening-photo img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}.opening-photo span{position:absolute;left:7px;bottom:7px;padding:4px 7px;border-radius:9px;background:#243b31dd;color:white;font-size:8px}.opening-upload{height:48px;margin-top:14px;border:1px dashed #8e958e;border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--olive);font-size:11px}.opening-upload input{display:none}
       .crop-frame{touch-action:none!important;user-select:none;-webkit-user-select:none}.crop-frame img{pointer-events:none}.crop-modal>label{display:none!important}.crop-gesture-tip{margin:10px 0 2px;text-align:center;color:#747a75;font-size:10px;letter-spacing:.4px}
@@ -68,7 +68,7 @@
     <div class="landscape-easter-egg" aria-hidden="true"><img src="./landscape-easter-egg.webp" alt="" decoding="async" fetchpriority="low"></div>
     <script>
       (() => {
-        const APP_VERSION = '14';
+        const APP_VERSION = '15';
         let availableVersion = '', checking = false, swRegistration = null;
         const showUpdate = () => {
           const home = document.querySelector('.seasonal-home');
@@ -107,21 +107,26 @@
         const index = mode === 'rotate' ? (previous + 1) % library.length : Math.min(Number(localStorage.getItem('zhijian-opening-fixed') || '0'), library.length - 1);
         localStorage.setItem('zhijian-opening-index', String(index));
         let homeImage = library[index];
+        const syncOpeningMode = () => {
+          const selected = (localStorage.getItem('zhijian-opening-mode') || 'rotate') === 'rotate' ? 'rotate' : 'fixed';
+          document.querySelectorAll('.opening-mode button').forEach(button => button.classList.toggle('active', button.dataset.mode === selected));
+        };
         const replaceHomeImage = () => {
           const image = document.querySelector('.seasonal-home > img');
           if (!image) return false;
           image.src = homeImage;
           image.alt = '复古海边拼贴';
+          syncOpeningMode();
           return true;
         };
         const renderSettings = () => {
           const page = document.querySelector('.settings-page');
           if (!page || page.querySelector('.opening-settings')) return false;
           const section = document.createElement('section');section.className='opening-settings';
-          section.innerHTML='<small>OPENING PHOTO</small><h2>开屏照片</h2><p>设置首页照片的显示方式，或进入照片存储库管理图片。</p><div class="opening-mode"><button data-mode="rotate">每次轮换</button><button data-mode="fixed-0">固定照片一</button><button data-mode="fixed-1">固定照片二</button></div><button class="opening-library-entry"><span>开屏照片存储库</span><b>→</b></button>';
+          section.innerHTML='<small>OPENING PHOTO</small><h2>开屏照片</h2><p>设置首页照片的显示方式，或进入照片存储库管理图片。</p><div class="opening-mode"><button data-mode="rotate">每次轮换</button><button data-mode="fixed">固定一张</button></div><button class="opening-library-entry"><span>开屏照片存储库</span><b>→</b></button>';
           page.appendChild(section);
-          const currentMode=localStorage.getItem('zhijian-opening-mode')||'rotate';const fixed=localStorage.getItem('zhijian-opening-fixed')||'0';section.querySelector(`[data-mode="${currentMode==='rotate'?'rotate':`fixed-${fixed}`}"]`)?.classList.add('active');
-          section.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{const value=button.dataset.mode;if(value==='rotate')localStorage.setItem('zhijian-opening-mode','rotate');else{localStorage.setItem('zhijian-opening-mode','fixed');localStorage.setItem('zhijian-opening-fixed',value.split('-')[1])}section.querySelectorAll('[data-mode]').forEach(x=>x.classList.remove('active'));button.classList.add('active')}));
+          const currentMode=localStorage.getItem('zhijian-opening-mode')||'rotate';section.querySelector(`[data-mode="${currentMode==='rotate'?'rotate':'fixed'}"]`)?.classList.add('active');
+          section.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{const value=button.dataset.mode;localStorage.setItem('zhijian-opening-mode',value);if(value==='fixed')localStorage.setItem('zhijian-opening-fixed',String(Math.max(0,library.indexOf(homeImage))));section.querySelectorAll('[data-mode]').forEach(x=>x.classList.remove('active'));button.classList.add('active')}));
           section.querySelector('.opening-library-entry').addEventListener('click',openLibrary);return true;
         };
         const openLibrary = () => {const photos=getLibrary();const overlay=document.createElement('div');overlay.className='opening-library-overlay';overlay.innerHTML='<section class="opening-library"><div class="opening-library-head"><h2>开屏照片存储库</h2><button aria-label="关闭">×</button></div><div class="opening-photo-grid"></div><label class="opening-upload">＋ 上传新照片<input type="file" accept="image/*"></label></section>';const grid=overlay.querySelector('.opening-photo-grid');photos.forEach((src,i)=>{const button=document.createElement('button');button.className=`opening-photo${homeImage===src?' active':''}`;button.innerHTML=`<img src="${src}"><span>照片 ${String(i+1).padStart(2,'0')}</span>`;button.addEventListener('click',()=>{localStorage.setItem('zhijian-opening-mode','fixed');localStorage.setItem('zhijian-opening-fixed',String(i));homeImage=src;replaceHomeImage();overlay.remove()});grid.appendChild(button)});overlay.querySelector('.opening-library-head button').addEventListener('click',()=>overlay.remove());overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});overlay.querySelector('input').addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');canvas.width=720;canvas.height=1200;const ctx=canvas.getContext('2d');const scale=Math.max(720/img.width,1200/img.height);const w=img.width*scale,h=img.height*scale;ctx.drawImage(img,(720-w)/2,(1200-h)/2,w,h);const custom=JSON.parse(localStorage.getItem('zhijian-opening-custom')||'[]');custom.push(canvas.toDataURL('image/jpeg',.82));localStorage.setItem('zhijian-opening-custom',JSON.stringify(custom));overlay.remove();openLibrary()};img.src=reader.result};reader.readAsDataURL(file)});document.body.appendChild(overlay)};
