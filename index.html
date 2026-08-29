@@ -26,7 +26,7 @@
       .picker-item:disabled{cursor:not-allowed;opacity:.58}.picker-item:disabled>span{background:#6f766f!important;color:#fff}
       .add-modal .submit{position:sticky;bottom:0;z-index:2;box-shadow:0 -10px 18px var(--paper)}
       .landscape-easter-egg{display:none}
-      .pwa-update-prompt{position:absolute;z-index:20;top:calc(14px + env(safe-area-inset-top));right:14px;border:1px solid #ffffff80;border-radius:999px;background:#172a22d9;color:#fff;padding:8px 12px;box-shadow:0 6px 18px #0003;backdrop-filter:blur(10px);font-size:9px;letter-spacing:.4px}.pwa-update-prompt:disabled{opacity:.72}
+      .pwa-update-prompt{position:absolute;z-index:20;top:calc(14px + env(safe-area-inset-top));right:14px;min-width:48px;border:1px solid #ffffff80;border-radius:999px;background:#172a22d9;color:#fff;padding:8px 12px;box-shadow:0 6px 18px #0003;backdrop-filter:blur(10px);font-size:9px;letter-spacing:.4px}.pwa-update-prompt:disabled{opacity:.72}
       @media (orientation:landscape) and (max-height:600px) and (pointer:coarse){
         .landscape-easter-egg{display:block;position:fixed;z-index:1000;inset:0;background:#112a33}
         .landscape-easter-egg img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 58%}
@@ -68,31 +68,33 @@
     <div class="landscape-easter-egg" aria-hidden="true"><img src="./landscape-easter-egg.webp" alt="" decoding="async" fetchpriority="low"></div>
     <script>
       (() => {
-        const APP_VERSION = '12';
-        let availableVersion = '', checking = false;
+        const APP_VERSION = '13';
+        let availableVersion = '', checking = false, swRegistration = null;
         const showUpdate = () => {
           const home = document.querySelector('.seasonal-home');
-          if (!home || !availableVersion || home.querySelector('.pwa-update-prompt')) return;
+          if (!home || home.querySelector('.pwa-update-prompt')) return;
           const button = document.createElement('button');
           button.className = 'pwa-update-prompt';
-          button.textContent = '发现新版本，立即更新';
+          button.textContent = '更新';
           button.addEventListener('click', async () => {
-            button.disabled = true;button.textContent = '正在更新…';
+            button.disabled = true;button.textContent = '检查中…';
+            const nextVersion = await checkVersion();
+            if (nextVersion === null) {button.textContent = '检查失败';window.setTimeout(() => {button.disabled = false;button.textContent = '更新'}, 1400);return}
+            if (!nextVersion) {button.textContent = '已是最新';window.setTimeout(() => {button.disabled = false;button.textContent = '更新'}, 1400);return}
+            button.textContent = '正在更新…';
             let reloading = false;
             const reload = () => {if (reloading) return;reloading = true;const url = new URL(location.href);url.searchParams.set('_v', availableVersion);location.replace(url)};
             navigator.serviceWorker?.addEventListener('controllerchange', reload, {once:true});
-            try {const registration = await navigator.serviceWorker?.getRegistration();await registration?.update();registration?.waiting?.postMessage({type:'SKIP_WAITING'})} catch {}
+            try {const registration = swRegistration || await navigator.serviceWorker?.register('./sw.js', {updateViaCache:'none'});await registration?.update();registration?.waiting?.postMessage({type:'SKIP_WAITING'})} catch {}
             window.setTimeout(reload, 1800);
           });
           home.appendChild(button);
         };
         const checkVersion = async () => {
-          if (checking) return;checking = true;
-          try {const response = await fetch(`./version.json?t=${Date.now()}`, {cache:'no-store'});const data = await response.json();availableVersion = String(data.version) !== APP_VERSION ? String(data.version) : '';showUpdate()} catch {} finally {checking = false}
+          if (checking) return availableVersion;checking = true;
+          try {const response = await fetch(`./version.json?t=${Date.now()}`, {cache:'no-store'});if (!response.ok) throw new Error('version');const data = await response.json();availableVersion = String(data.version) !== APP_VERSION ? String(data.version) : '';return availableVersion} catch {return null} finally {checking = false}
         };
-        if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').then(registration => registration.update()).finally(checkVersion));
-        window.addEventListener('pageshow', checkVersion);
-        document.addEventListener('visibilitychange', () => {if (document.visibilityState === 'visible') checkVersion()});
+        if ('serviceWorker' in navigator) window.addEventListener('load', async () => {try {swRegistration = await navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'})} catch {}});
         window.zhijianShowUpdate = showUpdate;
       })();
       (() => {

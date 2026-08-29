@@ -1,4 +1,4 @@
-const CACHE = 'zhijian-pwa-v12';
+const CACHE = 'zhijian-pwa-v13';
 const APP_SHELL = [
   './',
   './index.html',
@@ -18,7 +18,6 @@ self.addEventListener('install', event => {
     if (!response.ok) throw new Error(`Unable to cache ${path}`);
     await cache.put(path, response);
   }))));
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
@@ -38,15 +37,6 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (url.pathname.endsWith('/version.json')) {
     event.respondWith(fetch(event.request, { cache: 'no-store' }));
-    return;
-  }
-  const freshFirst = url.origin === location.origin &&
-    (event.request.mode === 'navigate' || ['script', 'style'].includes(event.request.destination));
-  if (freshFirst) {
-    event.respondWith(fetch(event.request, { cache: 'no-cache' }).then(response => {
-      if (response.ok) caches.open(CACHE).then(cache => cache.put(event.request, response.clone()));
-      return response;
-    }).catch(() => caches.match(event.request).then(cached => cached || caches.match('./index.html'))));
     return;
   }
   event.respondWith(
