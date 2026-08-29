@@ -69,7 +69,7 @@
     <div class="landscape-easter-egg" aria-hidden="true"><img src="./landscape-easter-egg.webp" alt="" decoding="async" fetchpriority="low"></div>
     <script>
       (() => {
-        const APP_VERSION = '18';
+        const APP_VERSION = '19';
         let availableVersion = '', checking = false, swRegistration = null;
         const showUpdate = () => {
           const home = document.querySelector('.seasonal-home');
@@ -100,6 +100,31 @@
         window.zhijianShowUpdate = showUpdate;
       })();
       (() => {
+        const wardrobeStorageKey = 'zhijian-wardrobe-v1';
+        const nativeStorageSetItem = Storage.prototype.setItem;
+        if (!window.__zhijianStorageGuard) {
+          window.__zhijianStorageGuard = true;
+          Storage.prototype.setItem = function (key, value) {
+            try {return nativeStorageSetItem.call(this, key, value)} catch (error) {
+              if (this === localStorage && key === wardrobeStorageKey && (error?.name === 'QuotaExceededError' || error?.code === 22)) {window.__zhijianWardrobeStorageFull = true;return}
+              throw error;
+            }
+          };
+          const nativeToDataURL = HTMLCanvasElement.prototype.toDataURL;
+          HTMLCanvasElement.prototype.toDataURL = function (type, quality) {
+            if (this.width === 800 && this.height === 1000 && (!type || type === 'image/jpeg')) quality = Math.min(Number.isFinite(quality) ? quality : .7, .68);
+            return nativeToDataURL.call(this, type, quality);
+          };
+        }
+        const compactWardrobeImages = async () => {
+          if (localStorage.getItem('zhijian-wardrobe-images-v19') === 'done') return;
+          let items;try {items=JSON.parse(localStorage.getItem(wardrobeStorageKey)||'[]')} catch {return}
+          let changed=false;
+          const compact = source => new Promise(resolve=>{if(typeof source!=='string'||!source.startsWith('data:image/'))return resolve(source);const image=new Image();image.onload=()=>{const canvas=document.createElement('canvas');canvas.width=600;canvas.height=750;canvas.getContext('2d')?.drawImage(image,0,0,600,750);changed=true;resolve(canvas.toDataURL('image/jpeg',.66))};image.onerror=()=>resolve(source);image.src=source});
+          for (const item of items) item.image=await compact(item.image);
+          try {if(changed)nativeStorageSetItem.call(localStorage,wardrobeStorageKey,JSON.stringify(items));nativeStorageSetItem.call(localStorage,'zhijian-wardrobe-images-v19','done');if(changed)location.reload()} catch {}
+        };
+        window.setTimeout(compactWardrobeImages,800);
         if (!window.__zhijianSafeSelectBlur) {
           window.__zhijianSafeSelectBlur = true;
           const nativeBlur = HTMLElement.prototype.blur;
