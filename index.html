@@ -69,7 +69,7 @@
     <div class="landscape-easter-egg" aria-hidden="true"><img src="./landscape-easter-egg.webp" alt="" decoding="async" fetchpriority="low"></div>
     <script>
       (() => {
-        const APP_VERSION = '21';
+        const APP_VERSION = '22';
         let availableVersion = '', checking = false, swRegistration = null;
         const showUpdate = () => {
           const home = document.querySelector('.seasonal-home');
@@ -137,7 +137,7 @@
             return nativeBlur.call(this);
           };
         }
-        const builtins = ['./home-collage.webp', './home-collage-2.webp'];
+        const builtins = ['./home-collage.webp', './home-collage-2.webp', './home-river-terminal.webp'];
         const getLibrary = () => [...builtins, ...JSON.parse(localStorage.getItem('zhijian-opening-custom') || '[]')];
         const mode = localStorage.getItem('zhijian-opening-mode') || 'rotate';
         const previous = Number(localStorage.getItem('zhijian-opening-index') || '-1');
