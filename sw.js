@@ -1,4 +1,4 @@
-const CACHE = 'zhijian-pwa-v29';
+const CACHE = 'zhijian-pwa-v30';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const APP_SHELL = [
   './assets/index-Dn82YseF.css',
   './journal-v2.js',
   './journal-v2.css',
+  './journal-module-texture.webp',
   './home-collage.webp',
   './home-collage-2.webp',
   './home-river-terminal.webp',
