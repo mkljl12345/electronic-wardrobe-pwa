@@ -72,6 +72,6 @@
 .journal-v2-crop-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.journal-v2-crop-head strong{font:600 18px 'Noto Serif SC'}.journal-v2-crop-head button{width:36px;height:36px;border:0;background:transparent;font-size:23px}
 .journal-v2-crop-frame{position:relative;width:min(68vw,280px);aspect-ratio:1;margin:0 auto 14px;border:2px solid #fff;border-radius:14px;overflow:hidden;background:#d9d5cc;box-shadow:0 8px 22px #23312936;touch-action:none}
 .journal-v2-crop-frame img{position:absolute;left:50%;top:50%;max-width:none;transform-origin:center;pointer-events:none}
-.journal-v2-crop label{display:grid;grid-template-columns:42px 1fr;align-items:center;gap:8px;margin:9px 0;font-size:9px}.journal-v2-crop input[type=range]{width:100%}
+.journal-v2-crop label{display:none}.journal-v2-crop-tip{margin:10px 0 12px;text-align:center;color:#747a75;font-size:10px;letter-spacing:.4px}
 .journal-v2-crop-save{width:100%;height:46px;margin-top:8px;border:0;border-radius:23px;background:var(--olive);color:#fff}
 @media(min-width:761px){.journal-v2-page{left:50%;width:min(520px,100%);transform:translateX(-50%)}}
