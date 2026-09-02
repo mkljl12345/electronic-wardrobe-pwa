@@ -27,13 +27,14 @@
 .journal-v2-editor input[type=date]::-webkit-date-and-time-value{text-align:left}
 .journal-v2-editor input[type=date]::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:auto;height:auto;margin:0;opacity:0;cursor:pointer}
 .journal-v2-editor-submit{position:sticky;z-index:2;bottom:0;width:100%;height:48px;margin-top:8px;border:0;border-radius:24px;background:var(--olive);color:#fff;box-shadow:0 10px 18px var(--paper)}
-.journal-v2-timeline{display:grid;gap:12px;margin-top:22px;padding:0}
-.journal-v2-day{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;height:132px;box-sizing:border-box;padding:0 18px;border:1px solid #c9c8c0;border-radius:22px;background:#d7ad72 url('./journal-module-texture.webp') center/cover no-repeat;color:var(--olive);text-align:left;overflow:hidden}
-.journal-v2-day.has-cover{color:#fff;background-position:center;background-size:cover;text-shadow:0 1px 8px #0008}
-.journal-v2-date{position:relative;z-index:2;display:flex;flex-direction:column;gap:7px}
-.journal-v2-date b{font:600 22px 'Noto Serif SC';letter-spacing:1px}
+.journal-v2-timeline{display:grid;gap:18px;margin-top:22px;padding:0}
+.journal-v2-day-item{display:grid;gap:7px}
+.journal-v2-date{display:flex;align-items:baseline;gap:9px;padding-left:4px;color:var(--olive)}
+.journal-v2-date b{font:600 15px 'Noto Serif SC';letter-spacing:1px}
 .journal-v2-date small{font-size:8px;letter-spacing:2px}
-.journal-v2-day-arrow{position:relative;z-index:2;display:grid;place-items:center;width:38px;height:38px;border:1px solid currentColor;border-radius:50%;font-size:18px;text-shadow:none}
+.journal-v2-day{position:relative;display:flex;align-items:center;justify-content:flex-end;width:100%;height:132px;box-sizing:border-box;padding:0 18px;border:1px solid #c9c8c0;border-radius:22px;background:#d7ad72 url('./journal-module-texture.webp') center/cover no-repeat;color:var(--olive);text-align:left;overflow:hidden}
+.journal-v2-day.has-cover{color:#fff;background-position:center;background-size:cover}
+.journal-v2-day-arrow{position:relative;z-index:2;display:grid;place-items:center;width:38px;height:38px;border:1px solid currentColor;border-radius:50%;font-size:18px;text-shadow:0 1px 6px #0008}
 .journal-v2-gallery-head{display:flex;align-items:center;justify-content:space-between;margin:18px 0 12px;color:#858b85;font-size:10px}
 .journal-v2-upload{height:48px;margin-top:12px;border:1px dashed #9da69f;border-radius:15px;display:grid;place-items:center;color:var(--olive);font-size:11px}
 .journal-v2-upload input{display:none}
