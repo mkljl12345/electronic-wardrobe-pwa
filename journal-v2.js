@@ -1,27 +1,459 @@
 (() => {
-  const KEY='zhijian-journals-v2',OLD_KEY='zhijian-journal-v1';
-  let currentJournalId='',currentDate='';
-  const read=()=>{try{const value=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(value)?value:[]}catch{return[]}};
-  const write=value=>localStorage.setItem(KEY,JSON.stringify(value));
-  const localToday=()=>new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
-  const dateRange=(start,end)=>{const result=[],cursor=new Date(`${start}T12:00:00`),last=new Date(`${end}T12:00:00`);while(cursor<=last&&result.length<366){result.push(cursor.toISOString().slice(0,10));cursor.setDate(cursor.getDate()+1)}return result};
-  const displayDate=value=>{const [year='',month='',day='']=String(value||'').split('-');return [year,month,day].filter(Boolean).join('.')};
-  const escapeHTML=value=>String(value).replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
-  const migrate=()=>{if(localStorage.getItem(KEY)!==null)return;let old=[];try{old=JSON.parse(localStorage.getItem(OLD_KEY)||'[]')}catch{}if(!Array.isArray(old)||!old.length){write([]);return}write(old.map((item,index)=>({id:`migrated-${item.id||index}`,title:`${displayDate(item.date)} 日志`,startDate:item.date,endDate:item.date,createdAt:item.createdAt||Date.now(),days:{[item.date]:{images:[],note:item.content||''}}})))};
-  const seedJejuJournal=()=>{const marker='zhijian-jeju-journal-v37';if(localStorage.getItem(marker)==='done')return;const values=read(),existing=values.some(item=>item.id==='journal-jeju-20260422'||(item.title==='济州岛'&&item.startDate==='2026-04-22'&&item.endDate==='2026-04-26'));if(!existing){const days={};dateRange('2026-04-22','2026-04-26').forEach(date=>days[date]={images:[]});days['2026-04-23'].cover='./jeju-2026-04-23-cover.png';values.push({id:'journal-jeju-20260422',title:'济州岛',startDate:'2026-04-22',endDate:'2026-04-26',createdAt:Date.now(),days});write(values)}localStorage.setItem(marker,'done')};
-  const addJejuApril24Cover=()=>{const marker='zhijian-jeju-april24-cover-v38';if(localStorage.getItem(marker)==='done')return;const values=read(),index=values.findIndex(item=>item.id==='journal-jeju-20260422'||(item.title==='济州岛'&&item.startDate==='2026-04-22'&&item.endDate==='2026-04-26'));if(index>=0){const journal=values[index],day=journal.days?.['2026-04-24']||{images:[]};values[index]={...journal,days:{...journal.days,'2026-04-24':{...day,cover:'./jeju-2026-04-24-cover.png'}}};write(values)}localStorage.setItem(marker,'done')};
-  const addJejuApril22Cover=()=>{const marker='zhijian-jeju-april22-cover-v39';if(localStorage.getItem(marker)==='done')return;const values=read(),index=values.findIndex(item=>item.id==='journal-jeju-20260422'||(item.title==='济州岛'&&item.startDate==='2026-04-22'&&item.endDate==='2026-04-26'));if(index>=0){const journal=values[index],day=journal.days?.['2026-04-22']||{images:[]};values[index]={...journal,days:{...journal.days,'2026-04-22':{...day,cover:'./jeju-2026-04-22-cover.png'}}};write(values)}localStorage.setItem(marker,'done')};
-  const updateJournal=(id,change)=>{const values=read(),index=values.findIndex(item=>item.id===id);if(index<0)return null;values[index]=change(values[index]);write(values);return values[index]};
-  const getJournal=()=>read().find(item=>item.id===currentJournalId);
-  const allImages=journal=>Object.values(journal.days||{}).flatMap(day=>day.images||[]);
-  const toolbar=(title,back)=>`<div class="journal-v2-toolbar"><button type="button" class="journal-v2-back" aria-label="返回">${back?'←':''}</button><strong>${escapeHTML(title)}</strong><span></span></div>`;
-  const closeEditor=()=>document.querySelector('.journal-v2-overlay')?.remove();
-  const showEditor=page=>{closeEditor();const overlay=document.createElement('div');overlay.className='journal-v2-overlay';overlay.innerHTML='<form class="journal-v2-editor" novalidate><div class="journal-v2-editor-head"><h2>新增日志</h2><button type="button" aria-label="关闭">×</button></div><label>日志标题<input name="title" maxlength="30" placeholder="输入日志标题"></label><label>开始日期<input name="start" type="date"></label><label>结束日期<input name="end" type="date"></label><button class="journal-v2-editor-submit" type="submit">创建日志</button></form>';const form=overlay.querySelector('form'),submit=form.querySelector('.journal-v2-editor-submit'),today=localToday();form.elements.start.value=today;form.elements.end.value=today;form.elements.start.addEventListener('input',()=>{if(form.elements.end.value<form.elements.start.value)form.elements.end.value=form.elements.start.value});overlay.querySelector('.journal-v2-editor-head button').addEventListener('click',closeEditor);overlay.addEventListener('click',event=>{if(event.target===overlay)closeEditor()});const create=()=>{const title=form.elements.title.value.trim(),startDate=form.elements.start.value,endDate=form.elements.end.value;if(!title){alert('请填写日志标题');form.elements.title.focus();return}if(!startDate||!endDate){alert('请选择日志日期');return}if(endDate<startDate){alert('结束日期不能早于开始日期');return}const days={};dateRange(startDate,endDate).forEach(date=>days[date]={images:[]});const values=read();values.push({id:`journal-${Date.now()}`,title,startDate,endDate,createdAt:Date.now(),days});write(values);closeEditor();renderPrimary(page)};form.addEventListener('submit',event=>{event.preventDefault();create()});submit.addEventListener('touchend',event=>{event.preventDefault();document.activeElement?.blur();create()},{passive:false});document.body.appendChild(overlay);setTimeout(()=>form.elements.title.focus(),80)};
-  const renderCover=(journal,className)=>{const images=allImages(journal).slice(0,3);if(!images.length)return'';return `<span class="${className}">${images.map(src=>`<img src="${src}" alt="">`).join('')}</span>`};
-  const bindSwipe=(module,card,remove,onOpen,onDelete)=>{let startX=0,startY=0,offset=0,dragging=false,suppressClick=false;const move=value=>{offset=Math.max(0,Math.min(78,value));card.style.transform=`translateX(${offset}px)`;module.dataset.swipeOpen=offset?'true':'false'};card.addEventListener('touchstart',event=>{const touch=event.touches[0];startX=touch.clientX;startY=touch.clientY;dragging=false;suppressClick=false;document.querySelectorAll('.journal-v2-module[data-swipe-open="true"]').forEach(other=>{if(other===module)return;other.dataset.swipeOpen='false';const otherCard=other.querySelector('.journal-v2-card');if(otherCard)otherCard.style.transform='translateX(0)'})},{passive:true});card.addEventListener('touchmove',event=>{const touch=event.touches[0],dx=touch.clientX-startX,dy=touch.clientY-startY;if(!dragging&&Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy))dragging=true;if(!dragging)return;event.preventDefault();card.classList.add('is-dragging');move(Math.max(0,dx))},{passive:false});card.addEventListener('touchend',()=>{if(dragging){suppressClick=true;move(offset>38?78:0);setTimeout(()=>suppressClick=false,350)}card.classList.remove('is-dragging');dragging=false},{passive:true});card.addEventListener('click',event=>{if(suppressClick){event.preventDefault();event.stopPropagation();return}if(offset){event.preventDefault();move(0);return}onOpen()});remove.addEventListener('click',onDelete)};
-  const renderPrimary=page=>{page.classList.remove('journal-v2-day-page');currentJournalId='';currentDate='';page.innerHTML=`${toolbar('日志',false)}<div class="journal-v2-list"></div><button type="button" class="journal-v2-add">＋ 新增日志</button>`;const list=page.querySelector('.journal-v2-list');read().sort((a,b)=>b.createdAt-a.createdAt).forEach(journal=>{const module=document.createElement('article');module.className='journal-v2-module';module.innerHTML=`<button type="button" class="journal-v2-delete" aria-label="删除日志">删除</button><button type="button" class="journal-v2-card"><span class="journal-v2-copy"><h3></h3><p></p></span>${renderCover(journal,'journal-v2-cover')}<span class="journal-v2-arrow">→</span></button>`;module.querySelector('h3').textContent=journal.title;module.querySelector('p').textContent=journal.startDate===journal.endDate?displayDate(journal.startDate):`${displayDate(journal.startDate)} — ${displayDate(journal.endDate)}`;bindSwipe(module,module.querySelector('.journal-v2-card'),module.querySelector('.journal-v2-delete'),()=>{currentJournalId=journal.id;renderTimeline(page)},()=>{if(!confirm(`删除“${journal.title}”？`))return;write(read().filter(item=>item.id!==journal.id));renderPrimary(page)});list.appendChild(module)});page.querySelector('.journal-v2-add').addEventListener('click',()=>showEditor(page));page.scrollTop=0};
-  const renderTimeline=page=>{page.classList.remove('journal-v2-day-page');window.JournalBadgeBoard?.cleanup();const journal=getJournal();if(!journal){renderPrimary(page);return}page.innerHTML=`${toolbar(journal.title,true)}<div class="journal-v2-timeline"></div>`;page.querySelector('.journal-v2-back').addEventListener('click',()=>renderPrimary(page));const timeline=page.querySelector('.journal-v2-timeline');dateRange(journal.startDate,journal.endDate).forEach((date,index)=>{const day=journal.days?.[date]||{},item=document.createElement('article'),button=document.createElement('button');item.className='journal-v2-day-item';item.innerHTML=`<div class="journal-v2-date"><small>DAY ${String(index+1).padStart(2,'0')}</small><b>${date.slice(5).replace('-','.')}</b></div>`;button.type='button';button.className=`journal-v2-day${day.cover?' has-cover':''}`;if(day.cover)button.style.backgroundImage=`url("${day.cover}")`;button.innerHTML='<span class="journal-v2-day-arrow">→</span>';button.addEventListener('click',()=>{currentDate=date;renderDay(page)});item.appendChild(button);timeline.appendChild(item);window.JournalBadgeBoard?.renderPreview(button,journal.id,date)});page.scrollTop=0};
-  const renderDay=page=>{const journal=getJournal();if(!journal||!currentDate){renderTimeline(page);return}page.classList.add('journal-v2-day-page');page.innerHTML=toolbar(currentDate,true);page.querySelector('.journal-v2-back').addEventListener('click',()=>renderTimeline(page));window.JournalBadgeBoard?.render(page,journal.id,currentDate);page.scrollTop=0};
-  const enhance=()=>{migrate();seedJejuJournal();addJejuApril24Cover();addJejuApril22Cover();const site=document.querySelector('.site'),dock=document.querySelector('.mobile-dock');if(!site||!dock)return false;let page=document.querySelector('.journal-v2-page');if(!page){document.querySelector('.journal-page')?.remove();page=document.createElement('section');page.id='journal';page.className='journal-v2-page';site.insertBefore(page,dock);renderPrimary(page)}let button=dock.querySelector('.journal-dock-button');if(!button){button=document.createElement('button');button.type='button';button.className='journal-dock-button';button.innerHTML='<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3.5h10.5A1.5 1.5 0 0 1 18 5v15H7.5A1.5 1.5 0 0 1 6 18.5v-15Z"></path><path d="M6 18.5A1.5 1.5 0 0 1 7.5 17H18M9 8h6M9 11h6"></path></svg><span>日志</span>';button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();dock.querySelectorAll('button').forEach(item=>item.classList.remove('active'));button.classList.add('active');page.classList.add('mobile-active');renderPrimary(page)});dock.appendChild(button)}dock.querySelectorAll('button:not(.journal-dock-button)').forEach(item=>{if(item.dataset.journalV2CloseBound==='true')return;item.dataset.journalV2CloseBound='true';item.addEventListener('click',()=>{page.classList.remove('mobile-active');button.classList.remove('active');item.classList.add('active');closeEditor()},{capture:true})});return true};
-  window.enhanceJournalV2=enhance;
+  const KEY = "zhijian-journals-v2",
+    OLD_KEY = "zhijian-journal-v1";
+  let currentJournalId = "",
+    currentDate = "";
+  const read = () => {
+    try {
+      const value = JSON.parse(localStorage.getItem(KEY) || "[]");
+      return Array.isArray(value) ? value : [];
+    } catch {
+      return [];
+    }
+  };
+  const write = (value) => localStorage.setItem(KEY, JSON.stringify(value));
+  const localToday = () =>
+    new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 10);
+  const dateRange = (start, end) => {
+    const result = [],
+      cursor = new Date(`${start}T12:00:00`),
+      last = new Date(`${end}T12:00:00`);
+    while (cursor <= last && result.length < 366) {
+      result.push(cursor.toISOString().slice(0, 10));
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return result;
+  };
+  const displayDate = (value) => {
+    const [year = "", month = "", day = ""] = String(value || "").split("-");
+    return [year, month, day].filter(Boolean).join(".");
+  };
+  const escapeHTML = (value) =>
+    String(value).replace(
+      /[&<>'"]/g,
+      (char) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "'": "&#39;",
+          '"': "&quot;",
+        })[char],
+    );
+  const migrate = () => {
+    if (localStorage.getItem(KEY) !== null) return;
+    let old = [];
+    try {
+      old = JSON.parse(localStorage.getItem(OLD_KEY) || "[]");
+    } catch {}
+    if (!Array.isArray(old) || !old.length) {
+      write([]);
+      return;
+    }
+    write(
+      old.map((item, index) => ({
+        id: `migrated-${item.id || index}`,
+        title: `${displayDate(item.date)} 日志`,
+        startDate: item.date,
+        endDate: item.date,
+        createdAt: item.createdAt || Date.now(),
+        days: { [item.date]: { images: [], note: item.content || "" } },
+      })),
+    );
+  };
+  const seedJejuJournal = () => {
+    const marker = "zhijian-jeju-journal-v37";
+    if (localStorage.getItem(marker) === "done") return;
+    const values = read(),
+      existing = values.some(
+        (item) =>
+          item.id === "journal-jeju-20260422" ||
+          (item.title === "济州岛" &&
+            item.startDate === "2026-04-22" &&
+            item.endDate === "2026-04-26"),
+      );
+    if (!existing) {
+      const days = {};
+      dateRange("2026-04-22", "2026-04-26").forEach(
+        (date) => (days[date] = { images: [] }),
+      );
+      days["2026-04-23"].cover = "./jeju-2026-04-23-cover.png";
+      values.push({
+        id: "journal-jeju-20260422",
+        title: "济州岛",
+        startDate: "2026-04-22",
+        endDate: "2026-04-26",
+        createdAt: Date.now(),
+        days,
+      });
+      write(values);
+    }
+    localStorage.setItem(marker, "done");
+  };
+  const addJejuApril24Cover = () => {
+    const marker = "zhijian-jeju-april24-cover-v38";
+    if (localStorage.getItem(marker) === "done") return;
+    const values = read(),
+      index = values.findIndex(
+        (item) =>
+          item.id === "journal-jeju-20260422" ||
+          (item.title === "济州岛" &&
+            item.startDate === "2026-04-22" &&
+            item.endDate === "2026-04-26"),
+      );
+    if (index >= 0) {
+      const journal = values[index],
+        day = journal.days?.["2026-04-24"] || { images: [] };
+      values[index] = {
+        ...journal,
+        days: {
+          ...journal.days,
+          "2026-04-24": { ...day, cover: "./jeju-2026-04-24-cover.png" },
+        },
+      };
+      write(values);
+    }
+    localStorage.setItem(marker, "done");
+  };
+  const addJejuApril22Cover = () => {
+    const marker = "zhijian-jeju-april22-cover-v39";
+    if (localStorage.getItem(marker) === "done") return;
+    const values = read(),
+      index = values.findIndex(
+        (item) =>
+          item.id === "journal-jeju-20260422" ||
+          (item.title === "济州岛" &&
+            item.startDate === "2026-04-22" &&
+            item.endDate === "2026-04-26"),
+      );
+    if (index >= 0) {
+      const journal = values[index],
+        day = journal.days?.["2026-04-22"] || { images: [] };
+      values[index] = {
+        ...journal,
+        days: {
+          ...journal.days,
+          "2026-04-22": { ...day, cover: "./jeju-2026-04-22-cover.png" },
+        },
+      };
+      write(values);
+    }
+    localStorage.setItem(marker, "done");
+  };
+  const updateJournal = (id, change) => {
+    const values = read(),
+      index = values.findIndex((item) => item.id === id);
+    if (index < 0) return null;
+    values[index] = change(values[index]);
+    write(values);
+    return values[index];
+  };
+  const getJournal = () => read().find((item) => item.id === currentJournalId);
+  const allImages = (journal) =>
+    Object.values(journal.days || {}).flatMap((day) => day.images || []);
+  const toolbar = (title, back) =>
+    `<div class="journal-v2-toolbar"><button type="button" class="journal-v2-back" aria-label="返回">${back ? "←" : ""}</button><strong>${escapeHTML(title)}</strong><span></span></div>`;
+  const closeEditor = () =>
+    document.querySelector(".journal-v2-overlay")?.remove();
+  const showEditor = (page) => {
+    closeEditor();
+    const overlay = document.createElement("div");
+    overlay.className = "journal-v2-overlay";
+    overlay.innerHTML =
+      '<form class="journal-v2-editor" novalidate><div class="journal-v2-editor-head"><h2>新增日志</h2><button type="button" aria-label="关闭">×</button></div><label>日志标题<input name="title" maxlength="30" placeholder="输入日志标题"></label><label>开始日期<input name="start" type="date"></label><label>结束日期<input name="end" type="date"></label><button class="journal-v2-editor-submit" type="submit">创建日志</button></form>';
+    const form = overlay.querySelector("form"),
+      submit = form.querySelector(".journal-v2-editor-submit"),
+      today = localToday();
+    form.elements.start.value = today;
+    form.elements.end.value = today;
+    form.elements.start.addEventListener("input", () => {
+      if (form.elements.end.value < form.elements.start.value)
+        form.elements.end.value = form.elements.start.value;
+    });
+    overlay
+      .querySelector(".journal-v2-editor-head button")
+      .addEventListener("click", closeEditor);
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) closeEditor();
+    });
+    const create = () => {
+      const title = form.elements.title.value.trim(),
+        startDate = form.elements.start.value,
+        endDate = form.elements.end.value;
+      if (!title) {
+        alert("请填写日志标题");
+        form.elements.title.focus();
+        return;
+      }
+      if (!startDate || !endDate) {
+        alert("请选择日志日期");
+        return;
+      }
+      if (endDate < startDate) {
+        alert("结束日期不能早于开始日期");
+        return;
+      }
+      const days = {};
+      dateRange(startDate, endDate).forEach(
+        (date) => (days[date] = { images: [] }),
+      );
+      const values = read();
+      values.push({
+        id: `journal-${Date.now()}`,
+        title,
+        startDate,
+        endDate,
+        createdAt: Date.now(),
+        days,
+      });
+      write(values);
+      closeEditor();
+      renderPrimary(page);
+    };
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      create();
+    });
+    submit.addEventListener(
+      "touchend",
+      (event) => {
+        event.preventDefault();
+        document.activeElement?.blur();
+        create();
+      },
+      { passive: false },
+    );
+    document.body.appendChild(overlay);
+    setTimeout(() => form.elements.title.focus(), 80);
+  };
+  const renderCover = (journal, className) => {
+    const images = allImages(journal).slice(0, 3);
+    if (!images.length) return "";
+    return `<span class="${className}">${images.map((src) => `<img src="${src}" alt="">`).join("")}</span>`;
+  };
+  const bindSwipe = (module, card, remove, onOpen, onDelete) => {
+    let startX = 0,
+      startY = 0,
+      offset = 0,
+      dragging = false,
+      suppressClick = false;
+    const move = (value) => {
+      offset = Math.max(0, Math.min(78, value));
+      card.style.transform = `translateX(${offset}px)`;
+      module.dataset.swipeOpen = offset ? "true" : "false";
+    };
+    card.addEventListener(
+      "touchstart",
+      (event) => {
+        const touch = event.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        dragging = false;
+        suppressClick = false;
+        document
+          .querySelectorAll('.journal-v2-module[data-swipe-open="true"]')
+          .forEach((other) => {
+            if (other === module) return;
+            other.dataset.swipeOpen = "false";
+            const otherCard = other.querySelector(".journal-v2-card");
+            if (otherCard) otherCard.style.transform = "translateX(0)";
+          });
+      },
+      { passive: true },
+    );
+    card.addEventListener(
+      "touchmove",
+      (event) => {
+        const touch = event.touches[0],
+          dx = touch.clientX - startX,
+          dy = touch.clientY - startY;
+        if (!dragging && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy))
+          dragging = true;
+        if (!dragging) return;
+        event.preventDefault();
+        card.classList.add("is-dragging");
+        move(Math.max(0, dx));
+      },
+      { passive: false },
+    );
+    card.addEventListener(
+      "touchend",
+      () => {
+        if (dragging) {
+          suppressClick = true;
+          move(offset > 38 ? 78 : 0);
+          setTimeout(() => (suppressClick = false), 350);
+        }
+        card.classList.remove("is-dragging");
+        dragging = false;
+      },
+      { passive: true },
+    );
+    card.addEventListener("click", (event) => {
+      if (suppressClick) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      if (offset) {
+        event.preventDefault();
+        move(0);
+        return;
+      }
+      onOpen();
+    });
+    remove.addEventListener("click", onDelete);
+  };
+  const renderPrimary = (page) => {
+    page.classList.remove("journal-v2-day-page");
+    currentJournalId = "";
+    currentDate = "";
+    page.innerHTML = `${toolbar("日志", false)}<div class="journal-v2-list"></div><button type="button" class="journal-v2-add">＋ 新增日志</button>`;
+    const list = page.querySelector(".journal-v2-list");
+    read()
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .forEach((journal) => {
+        const module = document.createElement("article");
+        module.className = "journal-v2-module";
+        module.innerHTML = `<button type="button" class="journal-v2-delete" aria-label="删除日志">删除</button><button type="button" class="journal-v2-card"><span class="journal-v2-copy"><h3></h3><p></p></span>${renderCover(journal, "journal-v2-cover")}<span class="journal-v2-arrow">→</span></button>`;
+        module.querySelector("h3").textContent = journal.title;
+        module.querySelector("p").textContent =
+          journal.startDate === journal.endDate
+            ? displayDate(journal.startDate)
+            : `${displayDate(journal.startDate)} — ${displayDate(journal.endDate)}`;
+        bindSwipe(
+          module,
+          module.querySelector(".journal-v2-card"),
+          module.querySelector(".journal-v2-delete"),
+          () => {
+            currentJournalId = journal.id;
+            renderTimeline(page);
+          },
+          () => {
+            if (!confirm(`删除“${journal.title}”？`)) return;
+            write(read().filter((item) => item.id !== journal.id));
+            renderPrimary(page);
+          },
+        );
+        list.appendChild(module);
+      });
+    page
+      .querySelector(".journal-v2-add")
+      .addEventListener("click", () => showEditor(page));
+    page.scrollTop = 0;
+  };
+  const renderTimeline = (page) => {
+    page.classList.remove("journal-v2-day-page");
+    window.JournalBadgeBoard?.cleanup();
+    const journal = getJournal();
+    if (!journal) {
+      renderPrimary(page);
+      return;
+    }
+    page.innerHTML = `${toolbar(journal.title, true)}<div class="journal-v2-timeline"></div>`;
+    page
+      .querySelector(".journal-v2-back")
+      .addEventListener("click", () => renderPrimary(page));
+    const timeline = page.querySelector(".journal-v2-timeline");
+    dateRange(journal.startDate, journal.endDate).forEach((date, index) => {
+      const day = journal.days?.[date] || {},
+        item = document.createElement("article"),
+        button = document.createElement("button");
+      item.className = "journal-v2-day-item";
+      item.innerHTML = `<div class="journal-v2-date"><small>DAY ${String(index + 1).padStart(2, "0")}</small><b>${date.slice(5).replace("-", ".")}</b></div>`;
+      button.type = "button";
+      button.className = `journal-v2-day${day.cover ? " has-cover" : ""}`;
+      if (day.cover) button.style.backgroundImage = `url("${day.cover}")`;
+      button.innerHTML = '<span class="journal-v2-day-arrow">→</span>';
+      button.addEventListener("click", () => {
+        currentDate = date;
+        renderDay(page);
+      });
+      item.appendChild(button);
+      timeline.appendChild(item);
+      window.JournalBadgeBoard?.renderPreview(
+        button,
+        journal.id,
+        date,
+        journal.title,
+      );
+    });
+    page.scrollTop = 0;
+  };
+  const renderDay = (page) => {
+    const journal = getJournal();
+    if (!journal || !currentDate) {
+      renderTimeline(page);
+      return;
+    }
+    page.classList.add("journal-v2-day-page");
+    page.innerHTML = toolbar(currentDate, true);
+    page
+      .querySelector(".journal-v2-back")
+      .addEventListener("click", () => renderTimeline(page));
+    window.JournalBadgeBoard?.render(
+      page,
+      journal.id,
+      currentDate,
+      journal.title,
+    );
+    page.scrollTop = 0;
+  };
+  const enhance = () => {
+    migrate();
+    seedJejuJournal();
+    addJejuApril24Cover();
+    addJejuApril22Cover();
+    const site = document.querySelector(".site"),
+      dock = document.querySelector(".mobile-dock");
+    if (!site || !dock) return false;
+    let page = document.querySelector(".journal-v2-page");
+    if (!page) {
+      document.querySelector(".journal-page")?.remove();
+      page = document.createElement("section");
+      page.id = "journal";
+      page.className = "journal-v2-page";
+      site.insertBefore(page, dock);
+      renderPrimary(page);
+    }
+    let button = dock.querySelector(".journal-dock-button");
+    if (!button) {
+      button = document.createElement("button");
+      button.type = "button";
+      button.className = "journal-dock-button";
+      button.innerHTML =
+        '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3.5h10.5A1.5 1.5 0 0 1 18 5v15H7.5A1.5 1.5 0 0 1 6 18.5v-15Z"></path><path d="M6 18.5A1.5 1.5 0 0 1 7.5 17H18M9 8h6M9 11h6"></path></svg><span>日志</span>';
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dock
+          .querySelectorAll("button")
+          .forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+        page.classList.add("mobile-active");
+        renderPrimary(page);
+      });
+      dock.appendChild(button);
+    }
+    dock
+      .querySelectorAll("button:not(.journal-dock-button)")
+      .forEach((item) => {
+        if (item.dataset.journalV2CloseBound === "true") return;
+        item.dataset.journalV2CloseBound = "true";
+        item.addEventListener(
+          "click",
+          () => {
+            page.classList.remove("mobile-active");
+            button.classList.remove("active");
+            item.classList.add("active");
+            closeEditor();
+          },
+          { capture: true },
+        );
+      });
+    return true;
+  };
+  window.enhanceJournalV2 = enhance;
 })();

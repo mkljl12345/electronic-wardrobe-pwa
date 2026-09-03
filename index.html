@@ -2,187 +2,1071 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <meta name="theme-color" content="#f2eadb" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="织间" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="apple-touch-icon" href="./pwa-icon-192.png" />
-    <link rel="preload" as="image" href="./home-collage.webp" type="image/webp" fetchpriority="high" />
+    <link
+      rel="preload"
+      as="image"
+      href="./home-collage.webp"
+      type="image/webp"
+      fetchpriority="high"
+    />
     <title>织间 · 智能衣橱</title>
     <style>
-      html,body,#root{margin:0;min-height:100%;background:#f2eadb}
-      .seasonal-home::after{display:none!important}
-      .seasonal-home .season-copy{display:none!important}
-      .opening-settings{margin:34px 0 30px;padding-top:28px;border-top:1px solid #c8c9c2;color:var(--olive)}
-      .opening-settings small{font-size:8px;letter-spacing:2px;color:var(--clay)}.opening-settings h2{margin:8px 0;font:600 30px 'Noto Serif SC'}.opening-settings p{margin:0 0 18px;color:#747a75;font-size:11px;line-height:1.7}
-      .opening-mode{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.opening-mode button{height:42px;border:1px solid #c4c7c2;border-radius:12px;background:transparent;color:var(--olive);font-size:10px}.opening-mode button.active{background:var(--olive);color:white;border-color:var(--olive)}
-      .opening-library-entry{width:100%;height:54px;margin-top:14px;padding:0 15px;border:1px solid #c4c7c2;border-radius:15px;background:transparent;color:var(--olive);display:flex;align-items:center;justify-content:space-between;font-size:11px}.opening-library-entry b{font-size:18px}
-      .opening-library-overlay{position:fixed;z-index:140;inset:0;background:#17231c88;display:flex;align-items:flex-end;backdrop-filter:blur(5px)}.opening-library{width:100%;max-height:78svh;padding:18px 18px calc(22px + env(safe-area-inset-bottom));border-radius:24px 24px 0 0;background:#f3f0e9;overflow:auto}.opening-library-head{display:flex;align-items:center;justify-content:space-between}.opening-library-head h2{margin:0;font:600 24px 'Noto Serif SC'}.opening-library-head button{width:38px;height:38px;border:0;background:none;font-size:24px}.opening-photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.opening-photo{position:relative;padding:0;border:3px solid transparent;border-radius:14px;overflow:hidden;background:#ddd}.opening-photo.active{border-color:var(--olive)}.opening-photo img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}.opening-photo span{position:absolute;left:7px;bottom:7px;padding:4px 7px;border-radius:9px;background:#243b31dd;color:white;font-size:8px}.opening-upload{height:48px;margin-top:14px;border:1px dashed #8e958e;border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--olive);font-size:11px}.opening-upload input{display:none}
-      .crop-frame{touch-action:none!important;user-select:none;-webkit-user-select:none}.crop-frame img{pointer-events:none}.crop-modal>label{display:none!important}.crop-gesture-tip{margin:10px 0 2px;text-align:center;color:#747a75;font-size:10px;letter-spacing:.4px}
-      .entry-arrow{background:var(--olive)!important}.travel-enter-button,.travel-detail-toolbar button,.settings-toolbar button{color:var(--olive)!important}.saved-entry-preview::after{display:none!important}.styling-entry-card:has(.saved-entry-preview)>span:first-of-type{display:none!important}
-      .categories{scrollbar-width:none}.categories::-webkit-scrollbar{display:none}
-      .picker-item:disabled{cursor:not-allowed;opacity:.58}.picker-item:disabled>span{background:#6f766f!important;color:#fff}
-      .add-modal .submit{position:sticky;bottom:0;z-index:2;box-shadow:0 -10px 18px var(--paper)}
-      .overlay:has(.add-modal){z-index:1600!important}
-      .upload.edit-current-image{position:relative;margin-bottom:8px;cursor:default}.upload.edit-current-image img{pointer-events:none}.adjust-garment-image{position:absolute;inset:0;border:0;background:linear-gradient(180deg,transparent 55%,#17231cbf);color:#fff;display:flex;align-items:flex-end;justify-content:center;padding:0 0 13px;font-size:10px;letter-spacing:.5px}.replace-garment-image{width:100%;height:38px;margin:0 0 10px;border:1px solid #a9aca5;border-radius:11px;background:transparent;color:var(--olive);font-size:10px}
-      .landscape-easter-egg{display:none}
-      .pwa-update-prompt{position:absolute;z-index:20;top:calc(14px + env(safe-area-inset-top));right:14px;min-width:48px;border:1px solid #ffffff80;border-radius:999px;background:#172a22d9;color:#fff;padding:8px 12px;box-shadow:0 6px 18px #0003;backdrop-filter:blur(10px);font-size:9px;letter-spacing:.4px}.pwa-update-prompt:disabled{opacity:.72}
-      @media (orientation:landscape) and (max-height:600px) and (pointer:coarse){
-        .landscape-easter-egg{display:block;position:fixed;z-index:1000;inset:0;background:#112a33}
-        .landscape-easter-egg img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 58%}
+      html,
+      body,
+      #root {
+        margin: 0;
+        min-height: 100%;
+        background: #f2eadb;
       }
-      @media (max-width:760px){.mobile-dock{z-index:1500!important;grid-template-columns:repeat(4,1fr)!important;padding-left:10px!important;padding-right:10px!important}}
-      @media (min-width:761px) and (max-height:900px){
-        .closet-page,.styling-page{padding-top:86px;padding-bottom:26px}
-        .section-head{margin-bottom:18px}
-        .section-head h2{font-size:46px;line-height:1}
-        .garment-row{padding:9px 0}
-        .garment-img{height:112px}
-        .row-empty{height:112px}
-        .garment h4{margin-top:5px}
-        .rail-arrow{top:39px}
-        .next-page,.back-top{margin-top:18px}
-        .studio{min-height:500px;height:calc(100vh - 206px)}
-        .model-stage{min-height:500px}
-        .mannequin{transform:scale(.82)}
-        .picker-panel{padding-top:4px;padding-bottom:4px}
-        .picker-group{padding:9px 0}
-        .picker-title h3{font-size:16px;margin-bottom:6px}
-        .picker-item{flex-basis:104px}
-        .picker-item img{height:72px}
+      .seasonal-home::after {
+        display: none !important;
       }
-      @media (min-width:761px) and (max-height:720px){
-        .closet-page,.styling-page{padding-top:76px}
-        .section-head h2{font-size:38px}
-        .garment-img{height:92px}
-        .row-empty{height:92px}
-        .studio{min-height:440px;height:calc(100vh - 170px)}
-        .model-stage{min-height:440px}
-        .mannequin{transform:scale(.72)}
+      .seasonal-home .season-copy {
+        display: none !important;
+      }
+      .opening-settings {
+        margin: 34px 0 30px;
+        padding-top: 28px;
+        border-top: 1px solid #c8c9c2;
+        color: var(--olive);
+      }
+      .opening-settings small {
+        font-size: 8px;
+        letter-spacing: 2px;
+        color: var(--clay);
+      }
+      .opening-settings h2 {
+        margin: 8px 0;
+        font: 600 30px "Noto Serif SC";
+      }
+      .opening-settings p {
+        margin: 0 0 18px;
+        color: #747a75;
+        font-size: 11px;
+        line-height: 1.7;
+      }
+      .opening-mode {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      .opening-mode button {
+        height: 42px;
+        border: 1px solid #c4c7c2;
+        border-radius: 12px;
+        background: transparent;
+        color: var(--olive);
+        font-size: 10px;
+      }
+      .opening-mode button.active {
+        background: var(--olive);
+        color: white;
+        border-color: var(--olive);
+      }
+      .opening-library-entry {
+        width: 100%;
+        height: 54px;
+        margin-top: 14px;
+        padding: 0 15px;
+        border: 1px solid #c4c7c2;
+        border-radius: 15px;
+        background: transparent;
+        color: var(--olive);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 11px;
+      }
+      .opening-library-entry b {
+        font-size: 18px;
+      }
+      .opening-library-overlay {
+        position: fixed;
+        z-index: 140;
+        inset: 0;
+        background: #17231c88;
+        display: flex;
+        align-items: flex-end;
+        backdrop-filter: blur(5px);
+      }
+      .opening-library {
+        width: 100%;
+        max-height: 78svh;
+        padding: 18px 18px calc(22px + env(safe-area-inset-bottom));
+        border-radius: 24px 24px 0 0;
+        background: #f3f0e9;
+        overflow: auto;
+      }
+      .opening-library-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .opening-library-head h2 {
+        margin: 0;
+        font: 600 24px "Noto Serif SC";
+      }
+      .opening-library-head button {
+        width: 38px;
+        height: 38px;
+        border: 0;
+        background: none;
+        font-size: 24px;
+      }
+      .opening-photo-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .opening-photo {
+        position: relative;
+        padding: 0;
+        border: 3px solid transparent;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #ddd;
+      }
+      .opening-photo.active {
+        border-color: var(--olive);
+      }
+      .opening-photo img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 4/5;
+        object-fit: cover;
+      }
+      .opening-photo span {
+        position: absolute;
+        left: 7px;
+        bottom: 7px;
+        padding: 4px 7px;
+        border-radius: 9px;
+        background: #243b31dd;
+        color: white;
+        font-size: 8px;
+      }
+      .opening-upload {
+        height: 48px;
+        margin-top: 14px;
+        border: 1px dashed #8e958e;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--olive);
+        font-size: 11px;
+      }
+      .opening-upload input {
+        display: none;
+      }
+      .crop-frame {
+        touch-action: none !important;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .crop-frame img {
+        pointer-events: none;
+      }
+      .crop-modal > label {
+        display: none !important;
+      }
+      .crop-gesture-tip {
+        margin: 10px 0 2px;
+        text-align: center;
+        color: #747a75;
+        font-size: 10px;
+        letter-spacing: 0.4px;
+      }
+      .entry-arrow {
+        background: var(--olive) !important;
+      }
+      .travel-enter-button,
+      .travel-detail-toolbar button,
+      .settings-toolbar button {
+        color: var(--olive) !important;
+      }
+      .saved-entry-preview::after {
+        display: none !important;
+      }
+      .styling-entry-card:has(.saved-entry-preview) > span:first-of-type {
+        display: none !important;
+      }
+      .categories {
+        scrollbar-width: none;
+      }
+      .categories::-webkit-scrollbar {
+        display: none;
+      }
+      .picker-item:disabled {
+        cursor: not-allowed;
+        opacity: 0.58;
+      }
+      .picker-item:disabled > span {
+        background: #6f766f !important;
+        color: #fff;
+      }
+      .add-modal .submit {
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+        box-shadow: 0 -10px 18px var(--paper);
+      }
+      .overlay:has(.add-modal) {
+        z-index: 1600 !important;
+      }
+      .upload.edit-current-image {
+        position: relative;
+        margin-bottom: 8px;
+        cursor: default;
+      }
+      .upload.edit-current-image img {
+        pointer-events: none;
+      }
+      .adjust-garment-image {
+        position: absolute;
+        inset: 0;
+        border: 0;
+        background: linear-gradient(180deg, transparent 55%, #17231cbf);
+        color: #fff;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 0 0 13px;
+        font-size: 10px;
+        letter-spacing: 0.5px;
+      }
+      .replace-garment-image {
+        width: 100%;
+        height: 38px;
+        margin: 0 0 10px;
+        border: 1px solid #a9aca5;
+        border-radius: 11px;
+        background: transparent;
+        color: var(--olive);
+        font-size: 10px;
+      }
+      .landscape-easter-egg {
+        display: none;
+      }
+      .pwa-update-prompt {
+        position: absolute;
+        z-index: 20;
+        top: calc(14px + env(safe-area-inset-top));
+        right: 14px;
+        min-width: 48px;
+        border: 1px solid #ffffff80;
+        border-radius: 999px;
+        background: #172a22d9;
+        color: #fff;
+        padding: 8px 12px;
+        box-shadow: 0 6px 18px #0003;
+        backdrop-filter: blur(10px);
+        font-size: 9px;
+        letter-spacing: 0.4px;
+      }
+      .pwa-update-prompt:disabled {
+        opacity: 0.72;
+      }
+      @media (orientation: landscape) and (max-height: 600px) and (pointer: coarse) {
+        .landscape-easter-egg {
+          display: block;
+          position: fixed;
+          z-index: 1000;
+          inset: 0;
+          background: #112a33;
+        }
+        .landscape-easter-egg img {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 58%;
+        }
+      }
+      @media (max-width: 760px) {
+        .mobile-dock {
+          z-index: 1500 !important;
+          grid-template-columns: repeat(4, 1fr) !important;
+          padding-left: 10px !important;
+          padding-right: 10px !important;
+        }
+      }
+      @media (min-width: 761px) and (max-height: 900px) {
+        .closet-page,
+        .styling-page {
+          padding-top: 86px;
+          padding-bottom: 26px;
+        }
+        .section-head {
+          margin-bottom: 18px;
+        }
+        .section-head h2 {
+          font-size: 46px;
+          line-height: 1;
+        }
+        .garment-row {
+          padding: 9px 0;
+        }
+        .garment-img {
+          height: 112px;
+        }
+        .row-empty {
+          height: 112px;
+        }
+        .garment h4 {
+          margin-top: 5px;
+        }
+        .rail-arrow {
+          top: 39px;
+        }
+        .next-page,
+        .back-top {
+          margin-top: 18px;
+        }
+        .studio {
+          min-height: 500px;
+          height: calc(100vh - 206px);
+        }
+        .model-stage {
+          min-height: 500px;
+        }
+        .mannequin {
+          transform: scale(0.82);
+        }
+        .picker-panel {
+          padding-top: 4px;
+          padding-bottom: 4px;
+        }
+        .picker-group {
+          padding: 9px 0;
+        }
+        .picker-title h3 {
+          font-size: 16px;
+          margin-bottom: 6px;
+        }
+        .picker-item {
+          flex-basis: 104px;
+        }
+        .picker-item img {
+          height: 72px;
+        }
+      }
+      @media (min-width: 761px) and (max-height: 720px) {
+        .closet-page,
+        .styling-page {
+          padding-top: 76px;
+        }
+        .section-head h2 {
+          font-size: 38px;
+        }
+        .garment-img {
+          height: 92px;
+        }
+        .row-empty {
+          height: 92px;
+        }
+        .studio {
+          min-height: 440px;
+          height: calc(100vh - 170px);
+        }
+        .model-stage {
+          min-height: 440px;
+        }
+        .mannequin {
+          transform: scale(0.72);
+        }
       }
     </style>
     <script type="module" crossorigin src="./assets/index-BrDmtj2V.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-Dn82YseF.css">
-    <link rel="stylesheet" href="./journal-v2.css">
+    <link rel="stylesheet" crossorigin href="./assets/index-Dn82YseF.css" />
+    <link rel="stylesheet" href="./journal-v2.css" />
   </head>
   <body>
     <div id="root"></div>
-    <div class="landscape-easter-egg" aria-hidden="true"><img src="./landscape-easter-egg.webp" alt="" decoding="async" fetchpriority="low"></div>
+    <div class="landscape-easter-egg" aria-hidden="true">
+      <img
+        src="./landscape-easter-egg.webp"
+        alt=""
+        decoding="async"
+        fetchpriority="low"
+      />
+    </div>
     <script src="./journal-badge-board.js"></script>
     <script src="./journal-v2.js"></script>
     <script>
       (() => {
-        const APP_VERSION = '41';
-        let availableVersion = '', checking = false, swRegistration = null;
+        const APP_VERSION = "42";
+        let availableVersion = "",
+          checking = false,
+          swRegistration = null;
         const showUpdate = () => {
-          const home = document.querySelector('.seasonal-home');
+          const home = document.querySelector(".seasonal-home");
           if (!home) return;
-          const existing = home.querySelector('.pwa-update-prompt');
-          if (!availableVersion) {existing?.remove();return}
+          const existing = home.querySelector(".pwa-update-prompt");
+          if (!availableVersion) {
+            existing?.remove();
+            return;
+          }
           if (existing) return;
-          const button = document.createElement('button');
-          button.className = 'pwa-update-prompt';
-          button.textContent = '更新';
-          button.addEventListener('click', async () => {
-            button.disabled = true;button.textContent = '正在更新…';
+          const button = document.createElement("button");
+          button.className = "pwa-update-prompt";
+          button.textContent = "更新";
+          button.addEventListener("click", async () => {
+            button.disabled = true;
+            button.textContent = "正在更新…";
             let reloading = false;
-            const reload = () => {if (reloading) return;reloading = true;const url = new URL(location.href);url.searchParams.set('_v', availableVersion);location.replace(url)};
-            navigator.serviceWorker?.addEventListener('controllerchange', reload, {once:true});
-            try {const registration = swRegistration || await navigator.serviceWorker?.register('./sw.js', {updateViaCache:'none'});await registration?.update();registration?.waiting?.postMessage({type:'SKIP_WAITING'})} catch {}
+            const reload = () => {
+              if (reloading) return;
+              reloading = true;
+              const url = new URL(location.href);
+              url.searchParams.set("_v", availableVersion);
+              location.replace(url);
+            };
+            navigator.serviceWorker?.addEventListener(
+              "controllerchange",
+              reload,
+              { once: true },
+            );
+            try {
+              const registration =
+                swRegistration ||
+                (await navigator.serviceWorker?.register("./sw.js", {
+                  updateViaCache: "none",
+                }));
+              await registration?.update();
+              registration?.waiting?.postMessage({ type: "SKIP_WAITING" });
+            } catch {}
             window.setTimeout(reload, 1800);
           });
           home.appendChild(button);
         };
         const checkVersion = async () => {
-          if (checking) return availableVersion;checking = true;
-          try {const response = await fetch(`./version.json?t=${Date.now()}`, {cache:'no-store'});if (!response.ok) throw new Error('version');const data = await response.json();availableVersion = String(data.version) !== APP_VERSION ? String(data.version) : '';return availableVersion} catch {return null} finally {checking = false;showUpdate()}
+          if (checking) return availableVersion;
+          checking = true;
+          try {
+            const response = await fetch(`./version.json?t=${Date.now()}`, {
+              cache: "no-store",
+            });
+            if (!response.ok) throw new Error("version");
+            const data = await response.json();
+            availableVersion =
+              String(data.version) !== APP_VERSION ? String(data.version) : "";
+            return availableVersion;
+          } catch {
+            return null;
+          } finally {
+            checking = false;
+            showUpdate();
+          }
         };
-        if ('serviceWorker' in navigator) window.addEventListener('load', async () => {try {swRegistration = await navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'})} catch {}checkVersion()});
-        window.addEventListener('pageshow', checkVersion);
-        document.addEventListener('visibilitychange', () => {if (document.visibilityState === 'visible') checkVersion()});
+        if ("serviceWorker" in navigator)
+          window.addEventListener("load", async () => {
+            try {
+              swRegistration = await navigator.serviceWorker.register(
+                "./sw.js",
+                { updateViaCache: "none" },
+              );
+            } catch {}
+            checkVersion();
+          });
+        window.addEventListener("pageshow", checkVersion);
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") checkVersion();
+        });
         window.zhijianShowUpdate = showUpdate;
       })();
       (() => {
-        const wardrobeStorageKey = 'zhijian-wardrobe-v1';
+        const wardrobeStorageKey = "zhijian-wardrobe-v1";
         const nativeStorageSetItem = Storage.prototype.setItem;
         if (!window.__zhijianStorageGuard) {
           window.__zhijianStorageGuard = true;
           Storage.prototype.setItem = function (key, value) {
-            try {return nativeStorageSetItem.call(this, key, value)} catch (error) {
-              if (this === localStorage && key === wardrobeStorageKey && (error?.name === 'QuotaExceededError' || error?.code === 22)) {window.__zhijianWardrobeStorageFull = true;return}
+            try {
+              return nativeStorageSetItem.call(this, key, value);
+            } catch (error) {
+              if (
+                this === localStorage &&
+                key === wardrobeStorageKey &&
+                (error?.name === "QuotaExceededError" || error?.code === 22)
+              ) {
+                window.__zhijianWardrobeStorageFull = true;
+                return;
+              }
               throw error;
             }
           };
           const nativeToDataURL = HTMLCanvasElement.prototype.toDataURL;
           HTMLCanvasElement.prototype.toDataURL = function (type, quality) {
-            if (this.width === 800 && this.height === 1000 && (!type || type === 'image/jpeg')) quality = Math.min(Number.isFinite(quality) ? quality : .7, .68);
+            if (
+              this.width === 800 &&
+              this.height === 1000 &&
+              (!type || type === "image/jpeg")
+            )
+              quality = Math.min(
+                Number.isFinite(quality) ? quality : 0.7,
+                0.68,
+              );
             return nativeToDataURL.call(this, type, quality);
           };
         }
         const compactWardrobeImages = async () => {
-          if (localStorage.getItem('zhijian-wardrobe-images-v19') === 'done') return;
-          let items;try {items=JSON.parse(localStorage.getItem(wardrobeStorageKey)||'[]')} catch {return}
-          let changed=false;
-          const compact = source => new Promise(resolve=>{if(typeof source!=='string'||!source.startsWith('data:image/'))return resolve(source);const image=new Image();image.onload=()=>{const canvas=document.createElement('canvas');canvas.width=600;canvas.height=750;canvas.getContext('2d')?.drawImage(image,0,0,600,750);changed=true;resolve(canvas.toDataURL('image/jpeg',.66))};image.onerror=()=>resolve(source);image.src=source});
-          for (const item of items) item.image=await compact(item.image);
-          try {if(changed)nativeStorageSetItem.call(localStorage,wardrobeStorageKey,JSON.stringify(items));nativeStorageSetItem.call(localStorage,'zhijian-wardrobe-images-v19','done');if(changed)location.reload()} catch {}
+          if (localStorage.getItem("zhijian-wardrobe-images-v19") === "done")
+            return;
+          let items;
+          try {
+            items = JSON.parse(
+              localStorage.getItem(wardrobeStorageKey) || "[]",
+            );
+          } catch {
+            return;
+          }
+          let changed = false;
+          const compact = (source) =>
+            new Promise((resolve) => {
+              if (
+                typeof source !== "string" ||
+                !source.startsWith("data:image/")
+              )
+                return resolve(source);
+              const image = new Image();
+              image.onload = () => {
+                const canvas = document.createElement("canvas");
+                canvas.width = 600;
+                canvas.height = 750;
+                canvas.getContext("2d")?.drawImage(image, 0, 0, 600, 750);
+                changed = true;
+                resolve(canvas.toDataURL("image/jpeg", 0.66));
+              };
+              image.onerror = () => resolve(source);
+              image.src = source;
+            });
+          for (const item of items) item.image = await compact(item.image);
+          try {
+            if (changed)
+              nativeStorageSetItem.call(
+                localStorage,
+                wardrobeStorageKey,
+                JSON.stringify(items),
+              );
+            nativeStorageSetItem.call(
+              localStorage,
+              "zhijian-wardrobe-images-v19",
+              "done",
+            );
+            if (changed) location.reload();
+          } catch {}
         };
-        window.setTimeout(compactWardrobeImages,800);
+        window.setTimeout(compactWardrobeImages, 800);
         if (!window.__zhijianSafeSelectBlur) {
           window.__zhijianSafeSelectBlur = true;
           const nativeBlur = HTMLElement.prototype.blur;
           HTMLElement.prototype.blur = function () {
             if (this instanceof HTMLSelectElement) {
               const select = this;
-              requestAnimationFrame(() => {if (select.isConnected) nativeBlur.call(select)});
+              requestAnimationFrame(() => {
+                if (select.isConnected) nativeBlur.call(select);
+              });
               return;
             }
             return nativeBlur.call(this);
           };
         }
-        const builtins = ['./home-collage.webp', './home-collage-2.webp', './home-river-terminal.webp', './home-riverbank-walk.webp'];
-        const getLibrary = () => [...builtins, ...JSON.parse(localStorage.getItem('zhijian-opening-custom') || '[]')];
-        const mode = localStorage.getItem('zhijian-opening-mode') || 'rotate';
-        const previous = Number(localStorage.getItem('zhijian-opening-index') || '-1');
+        const builtins = [
+          "./home-collage.webp",
+          "./home-collage-2.webp",
+          "./home-river-terminal.webp",
+          "./home-riverbank-walk.webp",
+        ];
+        const getLibrary = () => [
+          ...builtins,
+          ...JSON.parse(localStorage.getItem("zhijian-opening-custom") || "[]"),
+        ];
+        const mode = localStorage.getItem("zhijian-opening-mode") || "rotate";
+        const previous = Number(
+          localStorage.getItem("zhijian-opening-index") || "-1",
+        );
         const library = getLibrary();
-        const index = mode === 'rotate' ? (previous + 1) % library.length : Math.min(Number(localStorage.getItem('zhijian-opening-fixed') || '0'), library.length - 1);
-        localStorage.setItem('zhijian-opening-index', String(index));
+        const index =
+          mode === "rotate"
+            ? (previous + 1) % library.length
+            : Math.min(
+                Number(localStorage.getItem("zhijian-opening-fixed") || "0"),
+                library.length - 1,
+              );
+        localStorage.setItem("zhijian-opening-index", String(index));
         let homeImage = library[index];
         const syncOpeningMode = () => {
-          const selected = (localStorage.getItem('zhijian-opening-mode') || 'rotate') === 'rotate' ? 'rotate' : 'fixed';
-          document.querySelectorAll('.opening-mode button').forEach(button => button.classList.toggle('active', button.dataset.mode === selected));
+          const selected =
+            (localStorage.getItem("zhijian-opening-mode") || "rotate") ===
+            "rotate"
+              ? "rotate"
+              : "fixed";
+          document
+            .querySelectorAll(".opening-mode button")
+            .forEach((button) =>
+              button.classList.toggle(
+                "active",
+                button.dataset.mode === selected,
+              ),
+            );
         };
         const replaceHomeImage = () => {
-          const image = document.querySelector('.seasonal-home > img');
+          const image = document.querySelector(".seasonal-home > img");
           if (!image) return false;
           image.src = homeImage;
-          image.alt = '复古海边拼贴';
+          image.alt = "复古海边拼贴";
           syncOpeningMode();
           return true;
         };
         const renderSettings = () => {
-          const page = document.querySelector('.settings-page');
-          if (!page || page.querySelector('.opening-settings')) return false;
-          const section = document.createElement('section');section.className='opening-settings';
-          section.innerHTML='<small>OPENING PHOTO</small><h2>开屏照片</h2><p>设置首页照片的显示方式，或进入照片存储库管理图片。</p><div class="opening-mode"><button data-mode="rotate">每次轮换</button><button data-mode="fixed">固定一张</button></div><button class="opening-library-entry"><span>开屏照片存储库</span><b>→</b></button>';
+          const page = document.querySelector(".settings-page");
+          if (!page || page.querySelector(".opening-settings")) return false;
+          const section = document.createElement("section");
+          section.className = "opening-settings";
+          section.innerHTML =
+            '<small>OPENING PHOTO</small><h2>开屏照片</h2><p>设置首页照片的显示方式，或进入照片存储库管理图片。</p><div class="opening-mode"><button data-mode="rotate">每次轮换</button><button data-mode="fixed">固定一张</button></div><button class="opening-library-entry"><span>开屏照片存储库</span><b>→</b></button>';
           page.appendChild(section);
-          const currentMode=localStorage.getItem('zhijian-opening-mode')||'rotate';section.querySelector(`[data-mode="${currentMode==='rotate'?'rotate':'fixed'}"]`)?.classList.add('active');
-          section.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{const value=button.dataset.mode;localStorage.setItem('zhijian-opening-mode',value);if(value==='fixed')localStorage.setItem('zhijian-opening-fixed',String(Math.max(0,library.indexOf(homeImage))));section.querySelectorAll('[data-mode]').forEach(x=>x.classList.remove('active'));button.classList.add('active')}));
-          section.querySelector('.opening-library-entry').addEventListener('click',openLibrary);return true;
+          const currentMode =
+            localStorage.getItem("zhijian-opening-mode") || "rotate";
+          section
+            .querySelector(
+              `[data-mode="${currentMode === "rotate" ? "rotate" : "fixed"}"]`,
+            )
+            ?.classList.add("active");
+          section.querySelectorAll("[data-mode]").forEach((button) =>
+            button.addEventListener("click", () => {
+              const value = button.dataset.mode;
+              localStorage.setItem("zhijian-opening-mode", value);
+              if (value === "fixed")
+                localStorage.setItem(
+                  "zhijian-opening-fixed",
+                  String(Math.max(0, library.indexOf(homeImage))),
+                );
+              section
+                .querySelectorAll("[data-mode]")
+                .forEach((x) => x.classList.remove("active"));
+              button.classList.add("active");
+            }),
+          );
+          section
+            .querySelector(".opening-library-entry")
+            .addEventListener("click", openLibrary);
+          return true;
         };
-        const openLibrary = () => {const photos=getLibrary();const overlay=document.createElement('div');overlay.className='opening-library-overlay';overlay.innerHTML='<section class="opening-library"><div class="opening-library-head"><h2>开屏照片存储库</h2><button aria-label="关闭">×</button></div><div class="opening-photo-grid"></div><label class="opening-upload">＋ 上传新照片<input type="file" accept="image/*"></label></section>';const grid=overlay.querySelector('.opening-photo-grid');photos.forEach((src,i)=>{const button=document.createElement('button');button.className=`opening-photo${homeImage===src?' active':''}`;button.innerHTML=`<img src="${src}"><span>照片 ${String(i+1).padStart(2,'0')}</span>`;button.addEventListener('click',()=>{localStorage.setItem('zhijian-opening-mode','fixed');localStorage.setItem('zhijian-opening-fixed',String(i));homeImage=src;replaceHomeImage();overlay.remove()});grid.appendChild(button)});overlay.querySelector('.opening-library-head button').addEventListener('click',()=>overlay.remove());overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});overlay.querySelector('input').addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');canvas.width=720;canvas.height=1200;const ctx=canvas.getContext('2d');const scale=Math.max(720/img.width,1200/img.height);const w=img.width*scale,h=img.height*scale;ctx.drawImage(img,(720-w)/2,(1200-h)/2,w,h);const custom=JSON.parse(localStorage.getItem('zhijian-opening-custom')||'[]');custom.push(canvas.toDataURL('image/jpeg',.82));localStorage.setItem('zhijian-opening-custom',JSON.stringify(custom));overlay.remove();openLibrary()};img.src=reader.result};reader.readAsDataURL(file)});document.body.appendChild(overlay)};
-        const setReactRange=(input,value)=>{const next=Math.max(Number(input.min),Math.min(Number(input.max),value));Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,String(next));input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}))};
-        const returnAfterOutfitSave=()=>{const save=document.querySelector('.styling-toolbar button[aria-label="保存穿搭"]');if(!save||save.dataset.returnAfterSave==='true')return false;save.dataset.returnAfterSave='true';save.addEventListener('click',()=>window.setTimeout(()=>document.querySelector('.mobile-dock button:nth-child(2)')?.click(),80));return true};
-        const outfitSlotOrder={外套:0,上衣:1,下装:2,配饰:3,鞋履:4};
-        const garmentSlotForImage=image=>{const alt=image.getAttribute('alt')||'';if(alt in outfitSlotOrder)return alt;let items=[];try{items=JSON.parse(localStorage.getItem('zhijian-wardrobe-v1')||'[]')}catch{}const source=image.getAttribute('src')||image.src;const item=items.find(item=>item.image===source||item.image===image.src);return item?.category==='上装'?'上衣':item?.category};
-        const sortOutfitNodes=(container,nodes,getSlot,layout='flow')=>{const original=[...nodes],sorted=original.map((node,index)=>({node,index,rank:outfitSlotOrder[getSlot(node)]??99})).sort((a,b)=>a.rank-b.rank||a.index-b.index).map(entry=>entry.node);if(sorted.every((node,index)=>node===original[index]))return false;sorted.forEach(node=>container.appendChild(node));if(layout==='panels')sorted.forEach((node,index)=>{node.style.left=`${index*100/sorted.length}%`;node.style.width=`${100/sorted.length}%`;node.classList.remove('panel-only','panel-first','panel-middle','panel-last');node.classList.add(`panel-${sorted.length===1?'only':index===0?'first':index===sorted.length-1?'last':'middle'}`)});if(layout==='previews')sorted.forEach((node,index)=>{node.style.left=`${index*100/sorted.length}%`;node.style.width=`${100/sorted.length}%`;for(const prefix of ['saved-preview-image','sheet-preview-image'])if(node.classList.contains(prefix)){node.classList.remove('preview-only','preview-first','preview-middle','preview-last');node.classList.add(`preview-${sorted.length===1?'only':index===0?'first':index===sorted.length-1?'last':'middle'}`)}});return true};
-        const syncOutfitImageOrder=()=>{document.querySelectorAll('.look-triptych').forEach(container=>sortOutfitNodes(container,container.querySelectorAll('.animated-panel'),node=>node.querySelector('b')?.textContent,'panels'));document.querySelectorAll('.saved-entry-preview,.sheet-look-images,.travel-look-preview').forEach(container=>sortOutfitNodes(container,container.querySelectorAll(':scope > img'),garmentSlotForImage,container.matches('.saved-entry-preview,.sheet-look-images')?'previews':'flow'));document.querySelectorAll('.travel-outfit-gallery').forEach(container=>sortOutfitNodes(container,container.querySelectorAll(':scope > article'),node=>node.querySelector('span')?.textContent));document.querySelectorAll('.picker-panel').forEach(container=>sortOutfitNodes(container,container.querySelectorAll(':scope > .picker-group'),node=>node.querySelector('.picker-title h3')?.textContent));document.querySelectorAll('.look-caption').forEach(container=>sortOutfitNodes(container,container.querySelectorAll(':scope > span'),node=>{let items=[];try{items=JSON.parse(localStorage.getItem('zhijian-wardrobe-v1')||'[]')}catch{}const item=items.find(item=>item.name===node.textContent);return item?.category==='上装'?'上衣':item?.category}))};
-        const stabilizeGarmentForm=()=>{const modal=document.querySelector('.add-modal');if(!modal||modal.dataset.nameCommitGuard==='true')return false;modal.dataset.nameCommitGuard='true';const commitName=()=>{const name=modal.querySelector('input[name="name"]');if(!name)return;if(document.activeElement===name)name.blur();name.dispatchEvent(new Event('input',{bubbles:true}));name.dispatchEvent(new Event('change',{bubbles:true}))};modal.querySelectorAll('select').forEach(select=>select.addEventListener('pointerdown',commitName,{capture:true}));modal.querySelector('.submit')?.addEventListener('pointerdown',commitName,{capture:true});return true};
-        const enhanceGarmentEditor=()=>{const modal=[...document.querySelectorAll('.add-modal')].find(node=>node.querySelector('.modal-title h2')?.textContent.trim()==='编辑衣服');if(!modal)return false;const upload=modal.querySelector('label.upload');const input=upload?.querySelector('input[type="file"]');const image=upload?.querySelector('img');if(!upload||!input||!image||upload.querySelector('.adjust-garment-image'))return false;upload.classList.add('edit-current-image');const adjust=document.createElement('button');adjust.type='button';adjust.className='adjust-garment-image';adjust.textContent='点击图片调整';adjust.addEventListener('click',async event=>{event.preventDefault();event.stopPropagation();try{const blob=await fetch(image.src).then(response=>response.blob());const file=new File([blob],'current-garment.jpg',{type:blob.type||'image/jpeg'});const transfer=new DataTransfer();transfer.items.add(file);input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}))}catch{input.click()}});upload.appendChild(adjust);if(!upload.nextElementSibling?.classList.contains('replace-garment-image')){const replace=document.createElement('button');replace.type='button';replace.className='replace-garment-image';replace.textContent='重新上传新图片';replace.addEventListener('click',()=>input.click());upload.after(replace)}return true};
-        const enableCropGestures=()=>{const frame=document.querySelector('.crop-frame');if(!frame||frame.dataset.gestures==='on')return;const ranges=[...frame.closest('.crop-modal').querySelectorAll('input[type="range"]')];if(ranges.length<3)return;const [zoomInput,xInput,yInput]=ranges;frame.dataset.gestures='on';const tip=document.createElement('p');tip.className='crop-gesture-tip';tip.textContent='单指拖动位置 · 双指捏合缩放';frame.after(tip);let state=null;const distance=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);const center=t=>({x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2});frame.addEventListener('touchstart',e=>{if(e.touches.length===1)state={kind:'drag',x:e.touches[0].clientX,y:e.touches[0].clientY,baseX:Number(xInput.value),baseY:Number(yInput.value)};else if(e.touches.length>=2)state={kind:'pinch',distance:distance(e.touches),center:center(e.touches),zoom:Number(zoomInput.value),baseX:Number(xInput.value),baseY:Number(yInput.value)}},{passive:true});frame.addEventListener('touchmove',e=>{if(!state)return;e.preventDefault();if(state.kind==='drag'&&e.touches.length===1){setReactRange(xInput,state.baseX+e.touches[0].clientX-state.x);setReactRange(yInput,state.baseY+e.touches[0].clientY-state.y)}else if(state.kind==='pinch'&&e.touches.length>=2){const point=center(e.touches);setReactRange(zoomInput,state.zoom*distance(e.touches)/state.distance);setReactRange(xInput,state.baseX+point.x-state.center.x);setReactRange(yInput,state.baseY+point.y-state.center.y)}},{passive:false});frame.addEventListener('touchend',e=>{if(e.touches.length===0)state=null},{passive:true})};
-        const observer = new MutationObserver(() => {replaceHomeImage();renderSettings();window.enhanceJournalV2?.();returnAfterOutfitSave();syncOutfitImageOrder();stabilizeGarmentForm();enhanceGarmentEditor();enableCropGestures();window.zhijianShowUpdate?.()});observer.observe(document.getElementById('root'), { childList:true, subtree:true });replaceHomeImage();renderSettings();window.enhanceJournalV2?.();returnAfterOutfitSave();syncOutfitImageOrder();stabilizeGarmentForm();enhanceGarmentEditor();enableCropGestures();window.zhijianShowUpdate?.();
+        const openLibrary = () => {
+          const photos = getLibrary();
+          const overlay = document.createElement("div");
+          overlay.className = "opening-library-overlay";
+          overlay.innerHTML =
+            '<section class="opening-library"><div class="opening-library-head"><h2>开屏照片存储库</h2><button aria-label="关闭">×</button></div><div class="opening-photo-grid"></div><label class="opening-upload">＋ 上传新照片<input type="file" accept="image/*"></label></section>';
+          const grid = overlay.querySelector(".opening-photo-grid");
+          photos.forEach((src, i) => {
+            const button = document.createElement("button");
+            button.className = `opening-photo${homeImage === src ? " active" : ""}`;
+            button.innerHTML = `<img src="${src}"><span>照片 ${String(i + 1).padStart(2, "0")}</span>`;
+            button.addEventListener("click", () => {
+              localStorage.setItem("zhijian-opening-mode", "fixed");
+              localStorage.setItem("zhijian-opening-fixed", String(i));
+              homeImage = src;
+              replaceHomeImage();
+              overlay.remove();
+            });
+            grid.appendChild(button);
+          });
+          overlay
+            .querySelector(".opening-library-head button")
+            .addEventListener("click", () => overlay.remove());
+          overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) overlay.remove();
+          });
+          overlay.querySelector("input").addEventListener("change", (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+              const img = new Image();
+              img.onload = () => {
+                const canvas = document.createElement("canvas");
+                canvas.width = 720;
+                canvas.height = 1200;
+                const ctx = canvas.getContext("2d");
+                const scale = Math.max(720 / img.width, 1200 / img.height);
+                const w = img.width * scale,
+                  h = img.height * scale;
+                ctx.drawImage(img, (720 - w) / 2, (1200 - h) / 2, w, h);
+                const custom = JSON.parse(
+                  localStorage.getItem("zhijian-opening-custom") || "[]",
+                );
+                custom.push(canvas.toDataURL("image/jpeg", 0.82));
+                localStorage.setItem(
+                  "zhijian-opening-custom",
+                  JSON.stringify(custom),
+                );
+                overlay.remove();
+                openLibrary();
+              };
+              img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+          });
+          document.body.appendChild(overlay);
+        };
+        const setReactRange = (input, value) => {
+          const next = Math.max(
+            Number(input.min),
+            Math.min(Number(input.max), value),
+          );
+          Object.getOwnPropertyDescriptor(
+            HTMLInputElement.prototype,
+            "value",
+          ).set.call(input, String(next));
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+        };
+        const returnAfterOutfitSave = () => {
+          const save = document.querySelector(
+            '.styling-toolbar button[aria-label="保存穿搭"]',
+          );
+          if (!save || save.dataset.returnAfterSave === "true") return false;
+          save.dataset.returnAfterSave = "true";
+          save.addEventListener("click", () =>
+            window.setTimeout(
+              () =>
+                document
+                  .querySelector(".mobile-dock button:nth-child(2)")
+                  ?.click(),
+              80,
+            ),
+          );
+          return true;
+        };
+        const outfitSlotOrder = { 外套: 0, 上衣: 1, 下装: 2, 配饰: 3, 鞋履: 4 };
+        const garmentSlotForImage = (image) => {
+          const alt = image.getAttribute("alt") || "";
+          if (alt in outfitSlotOrder) return alt;
+          let items = [];
+          try {
+            items = JSON.parse(
+              localStorage.getItem("zhijian-wardrobe-v1") || "[]",
+            );
+          } catch {}
+          const source = image.getAttribute("src") || image.src;
+          const item = items.find(
+            (item) => item.image === source || item.image === image.src,
+          );
+          return item?.category === "上装" ? "上衣" : item?.category;
+        };
+        const sortOutfitNodes = (
+          container,
+          nodes,
+          getSlot,
+          layout = "flow",
+        ) => {
+          const original = [...nodes],
+            sorted = original
+              .map((node, index) => ({
+                node,
+                index,
+                rank: outfitSlotOrder[getSlot(node)] ?? 99,
+              }))
+              .sort((a, b) => a.rank - b.rank || a.index - b.index)
+              .map((entry) => entry.node);
+          if (sorted.every((node, index) => node === original[index]))
+            return false;
+          sorted.forEach((node) => container.appendChild(node));
+          if (layout === "panels")
+            sorted.forEach((node, index) => {
+              node.style.left = `${(index * 100) / sorted.length}%`;
+              node.style.width = `${100 / sorted.length}%`;
+              node.classList.remove(
+                "panel-only",
+                "panel-first",
+                "panel-middle",
+                "panel-last",
+              );
+              node.classList.add(
+                `panel-${sorted.length === 1 ? "only" : index === 0 ? "first" : index === sorted.length - 1 ? "last" : "middle"}`,
+              );
+            });
+          if (layout === "previews")
+            sorted.forEach((node, index) => {
+              node.style.left = `${(index * 100) / sorted.length}%`;
+              node.style.width = `${100 / sorted.length}%`;
+              for (const prefix of [
+                "saved-preview-image",
+                "sheet-preview-image",
+              ])
+                if (node.classList.contains(prefix)) {
+                  node.classList.remove(
+                    "preview-only",
+                    "preview-first",
+                    "preview-middle",
+                    "preview-last",
+                  );
+                  node.classList.add(
+                    `preview-${sorted.length === 1 ? "only" : index === 0 ? "first" : index === sorted.length - 1 ? "last" : "middle"}`,
+                  );
+                }
+            });
+          return true;
+        };
+        const syncOutfitImageOrder = () => {
+          document
+            .querySelectorAll(".look-triptych")
+            .forEach((container) =>
+              sortOutfitNodes(
+                container,
+                container.querySelectorAll(".animated-panel"),
+                (node) => node.querySelector("b")?.textContent,
+                "panels",
+              ),
+            );
+          document
+            .querySelectorAll(
+              ".saved-entry-preview,.sheet-look-images,.travel-look-preview",
+            )
+            .forEach((container) =>
+              sortOutfitNodes(
+                container,
+                container.querySelectorAll(":scope > img"),
+                garmentSlotForImage,
+                container.matches(".saved-entry-preview,.sheet-look-images")
+                  ? "previews"
+                  : "flow",
+              ),
+            );
+          document
+            .querySelectorAll(".travel-outfit-gallery")
+            .forEach((container) =>
+              sortOutfitNodes(
+                container,
+                container.querySelectorAll(":scope > article"),
+                (node) => node.querySelector("span")?.textContent,
+              ),
+            );
+          document
+            .querySelectorAll(".picker-panel")
+            .forEach((container) =>
+              sortOutfitNodes(
+                container,
+                container.querySelectorAll(":scope > .picker-group"),
+                (node) => node.querySelector(".picker-title h3")?.textContent,
+              ),
+            );
+          document.querySelectorAll(".look-caption").forEach((container) =>
+            sortOutfitNodes(
+              container,
+              container.querySelectorAll(":scope > span"),
+              (node) => {
+                let items = [];
+                try {
+                  items = JSON.parse(
+                    localStorage.getItem("zhijian-wardrobe-v1") || "[]",
+                  );
+                } catch {}
+                const item = items.find(
+                  (item) => item.name === node.textContent,
+                );
+                return item?.category === "上装" ? "上衣" : item?.category;
+              },
+            ),
+          );
+        };
+        const stabilizeGarmentForm = () => {
+          const modal = document.querySelector(".add-modal");
+          if (!modal || modal.dataset.nameCommitGuard === "true") return false;
+          modal.dataset.nameCommitGuard = "true";
+          const commitName = () => {
+            const name = modal.querySelector('input[name="name"]');
+            if (!name) return;
+            if (document.activeElement === name) name.blur();
+            name.dispatchEvent(new Event("input", { bubbles: true }));
+            name.dispatchEvent(new Event("change", { bubbles: true }));
+          };
+          modal
+            .querySelectorAll("select")
+            .forEach((select) =>
+              select.addEventListener("pointerdown", commitName, {
+                capture: true,
+              }),
+            );
+          modal
+            .querySelector(".submit")
+            ?.addEventListener("pointerdown", commitName, { capture: true });
+          return true;
+        };
+        const enhanceGarmentEditor = () => {
+          const modal = [...document.querySelectorAll(".add-modal")].find(
+            (node) =>
+              node.querySelector(".modal-title h2")?.textContent.trim() ===
+              "编辑衣服",
+          );
+          if (!modal) return false;
+          const upload = modal.querySelector("label.upload");
+          const input = upload?.querySelector('input[type="file"]');
+          const image = upload?.querySelector("img");
+          if (
+            !upload ||
+            !input ||
+            !image ||
+            upload.querySelector(".adjust-garment-image")
+          )
+            return false;
+          upload.classList.add("edit-current-image");
+          const adjust = document.createElement("button");
+          adjust.type = "button";
+          adjust.className = "adjust-garment-image";
+          adjust.textContent = "点击图片调整";
+          adjust.addEventListener("click", async (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            try {
+              const blob = await fetch(image.src).then((response) =>
+                response.blob(),
+              );
+              const file = new File([blob], "current-garment.jpg", {
+                type: blob.type || "image/jpeg",
+              });
+              const transfer = new DataTransfer();
+              transfer.items.add(file);
+              input.files = transfer.files;
+              input.dispatchEvent(new Event("change", { bubbles: true }));
+            } catch {
+              input.click();
+            }
+          });
+          upload.appendChild(adjust);
+          if (
+            !upload.nextElementSibling?.classList.contains(
+              "replace-garment-image",
+            )
+          ) {
+            const replace = document.createElement("button");
+            replace.type = "button";
+            replace.className = "replace-garment-image";
+            replace.textContent = "重新上传新图片";
+            replace.addEventListener("click", () => input.click());
+            upload.after(replace);
+          }
+          return true;
+        };
+        const enableCropGestures = () => {
+          const frame = document.querySelector(".crop-frame");
+          if (!frame || frame.dataset.gestures === "on") return;
+          const ranges = [
+            ...frame
+              .closest(".crop-modal")
+              .querySelectorAll('input[type="range"]'),
+          ];
+          if (ranges.length < 3) return;
+          const [zoomInput, xInput, yInput] = ranges;
+          frame.dataset.gestures = "on";
+          const tip = document.createElement("p");
+          tip.className = "crop-gesture-tip";
+          tip.textContent = "单指拖动位置 · 双指捏合缩放";
+          frame.after(tip);
+          let state = null;
+          const distance = (t) =>
+            Math.hypot(
+              t[0].clientX - t[1].clientX,
+              t[0].clientY - t[1].clientY,
+            );
+          const center = (t) => ({
+            x: (t[0].clientX + t[1].clientX) / 2,
+            y: (t[0].clientY + t[1].clientY) / 2,
+          });
+          frame.addEventListener(
+            "touchstart",
+            (e) => {
+              if (e.touches.length === 1)
+                state = {
+                  kind: "drag",
+                  x: e.touches[0].clientX,
+                  y: e.touches[0].clientY,
+                  baseX: Number(xInput.value),
+                  baseY: Number(yInput.value),
+                };
+              else if (e.touches.length >= 2)
+                state = {
+                  kind: "pinch",
+                  distance: distance(e.touches),
+                  center: center(e.touches),
+                  zoom: Number(zoomInput.value),
+                  baseX: Number(xInput.value),
+                  baseY: Number(yInput.value),
+                };
+            },
+            { passive: true },
+          );
+          frame.addEventListener(
+            "touchmove",
+            (e) => {
+              if (!state) return;
+              e.preventDefault();
+              if (state.kind === "drag" && e.touches.length === 1) {
+                setReactRange(
+                  xInput,
+                  state.baseX + e.touches[0].clientX - state.x,
+                );
+                setReactRange(
+                  yInput,
+                  state.baseY + e.touches[0].clientY - state.y,
+                );
+              } else if (state.kind === "pinch" && e.touches.length >= 2) {
+                const point = center(e.touches);
+                setReactRange(
+                  zoomInput,
+                  (state.zoom * distance(e.touches)) / state.distance,
+                );
+                setReactRange(xInput, state.baseX + point.x - state.center.x);
+                setReactRange(yInput, state.baseY + point.y - state.center.y);
+              }
+            },
+            { passive: false },
+          );
+          frame.addEventListener(
+            "touchend",
+            (e) => {
+              if (e.touches.length === 0) state = null;
+            },
+            { passive: true },
+          );
+        };
+        const observer = new MutationObserver(() => {
+          replaceHomeImage();
+          renderSettings();
+          window.enhanceJournalV2?.();
+          returnAfterOutfitSave();
+          syncOutfitImageOrder();
+          stabilizeGarmentForm();
+          enhanceGarmentEditor();
+          enableCropGestures();
+          window.zhijianShowUpdate?.();
+        });
+        observer.observe(document.getElementById("root"), {
+          childList: true,
+          subtree: true,
+        });
+        replaceHomeImage();
+        renderSettings();
+        window.enhanceJournalV2?.();
+        returnAfterOutfitSave();
+        syncOutfitImageOrder();
+        stabilizeGarmentForm();
+        enhanceGarmentEditor();
+        enableCropGestures();
+        window.zhijianShowUpdate?.();
       })();
     </script>
   </body>
