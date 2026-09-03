@@ -26,6 +26,29 @@
     }
     return result;
   };
+  const resetJournalDataV44 = () => {
+    const marker = "zhijian-journal-data-reset-v44";
+    if (localStorage.getItem(marker) === "done") return;
+    const days = {};
+    dateRange("2026-04-22", "2026-04-26").forEach(
+      (date) => (days[date] = { images: [] }),
+    );
+    days["2026-04-22"].cover = "./jeju-2026-04-22-cover.png";
+    days["2026-04-23"].cover = "./jeju-2026-04-23-cover.png";
+    days["2026-04-24"].cover = "./jeju-2026-04-24-cover.png";
+    write([
+      {
+        id: "journal-jeju-20260422",
+        title: "济州岛",
+        startDate: "2026-04-22",
+        endDate: "2026-04-26",
+        createdAt: Date.now(),
+        days,
+      },
+    ]);
+    localStorage.removeItem(OLD_KEY);
+    localStorage.setItem(marker, "done");
+  };
   const displayDate = (value) => {
     const [year = "", month = "", day = ""] = String(value || "").split("-");
     return [year, month, day].filter(Boolean).join(".");
@@ -373,12 +396,6 @@
       });
       item.appendChild(button);
       timeline.appendChild(item);
-      window.JournalBadgeBoard?.renderPreview(
-        button,
-        journal.id,
-        date,
-        journal.title,
-      );
     });
     page.scrollTop = 0;
   };
@@ -402,10 +419,8 @@
     page.scrollTop = 0;
   };
   const enhance = () => {
-    migrate();
-    seedJejuJournal();
-    addJejuApril24Cover();
-    addJejuApril22Cover();
+    resetJournalDataV44();
+    window.JournalBadgeBoard?.resetOnce();
     const site = document.querySelector(".site"),
       dock = document.querySelector(".mobile-dock");
     if (!site || !dock) return false;

@@ -1,6 +1,8 @@
 (() => {
   const DB_NAME = "zhijian-journal-badges",
     STORE = "days";
+  const RESET_MARKER = "zhijian-journal-layout-reset-v44";
+  let resetPromise = null;
   const JEJU_APRIL23_BADGES = [
     "./jeju-2026-04-23-badge-01.png",
     "./jeju-2026-04-23-badge-02.png",
@@ -71,6 +73,14 @@
       store.get(keyFor(journalId, date)),
     )) || { key: keyFor(journalId, date), badges: [] };
   const save = (record) => transact("readwrite", (store) => store.put(record));
+  const resetOnce = () => {
+    if (localStorage.getItem(RESET_MARKER) === "done") return Promise.resolve();
+    if (!resetPromise)
+      resetPromise = transact("readwrite", (store) => store.clear()).then(() => {
+        localStorage.setItem(RESET_MARKER, "done");
+      });
+    return resetPromise;
+  };
   const seedJejuApril23 = async (record, journalTitle, date) => {
     if (journalTitle !== "济州岛" || date !== "2026-04-23") return record;
     const existing = new Set(record.badges.map((badge) => badge.id));
@@ -139,6 +149,7 @@
     node.style.transform = `translate(-50%,-50%) rotate(${badge.rotation}deg)`;
   };
   const renderPreview = async (button, journalId, date, journalTitle) => {
+    await resetOnce();
     let record = await load(journalId, date);
     try {
       record = await seedPresetBadges(record, journalTitle, date);
@@ -410,6 +421,7 @@
   };
   const render = async (page, journalId, date, journalTitle) => {
     cleanup();
+    await resetOnce();
     let record = await load(journalId, date);
     try {
       record = await seedPresetBadges(record, journalTitle, date);
@@ -420,10 +432,9 @@
     const board = document.createElement("section");
     board.className = "journal-badge-board";
     board.innerHTML =
-      '<p class="journal-badge-help">长按徽章 0.35 秒后拖动 · 双指缩放或旋转</p><label class="journal-badge-add">+添加徽章<input type="file" accept="image/*"></label><div class="journal-badge-stage"></div>';
+      '<p class="journal-badge-help">长按徽章 0.35 秒后拖动 · 双指缩放或旋转</p><div class="journal-badge-stage"></div>';
     page.appendChild(board);
-    const stage = board.querySelector(".journal-badge-stage"),
-      input = board.querySelector("input");
+    const stage = board.querySelector(".journal-badge-stage");
     const draw = () => {
       stage.innerHTML = "";
       record.badges
@@ -433,8 +444,7 @@
           const item = document.createElement("div");
           item.className = "journal-badge-item";
           item.dataset.id = badge.id;
-          item.innerHTML =
-            '<img draggable="false" alt=""><button type="button" aria-label="删除徽章">×</button>';
+          item.innerHTML = '<img draggable="false" alt="">';
           item.querySelector("img").src = objectURL(badge.image);
           styleBadge(item, badge);
           let timer = null,
@@ -566,36 +576,10 @@
             },
             { passive: true },
           );
-          item.querySelector("button").onclick = async (event) => {
-            event.stopPropagation();
-            record.badges = record.badges.filter(
-              (value) => value.id !== badge.id,
-            );
-            await save(record);
-            draw();
-          };
           stage.appendChild(item);
         });
     };
     draw();
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      openCrop(file, async (blob) => {
-        record.badges.push({
-          id: `badge-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-          image: blob,
-          x: 50,
-          y: 50,
-          scale: 1,
-          rotation: 0,
-          z: Math.max(0, ...record.badges.map((value) => value.z)) + 1,
-        });
-        await save(record);
-        draw();
-      });
-      input.value = "";
-    };
   };
-  window.JournalBadgeBoard = { render, renderPreview, cleanup };
+  window.JournalBadgeBoard = { render, renderPreview, cleanup, resetOnce };
 })();
