@@ -1,5 +1,6 @@
 .journal-v2-page{display:none;position:fixed;z-index:1400;inset:0;box-sizing:border-box;overflow-y:auto;background:var(--paper);color:var(--olive);padding:calc(18px + env(safe-area-inset-top)) 18px calc(110px + env(safe-area-inset-bottom))}
 .journal-v2-page.mobile-active{display:block}
+.journal-v2-page.journal-v2-day-page{background:#d7ad72 url('./journal-day-background.webp') center/cover no-repeat}
 .journal-v2-toolbar{display:grid;grid-template-columns:42px 1fr 42px;align-items:center;height:48px}
 .journal-v2-toolbar strong{text-align:center;font:600 18px 'Noto Serif SC'}
 .journal-v2-toolbar button{width:42px;height:42px;padding:0;border:0;background:transparent;color:var(--olive);font-size:25px}
@@ -35,15 +36,4 @@
 .journal-v2-day{position:relative;display:flex;align-items:center;justify-content:flex-end;width:100%;height:132px;box-sizing:border-box;padding:0 18px;border:1px solid #c9c8c0;border-radius:22px;background:#d7ad72 url('./journal-module-texture.webp') center/cover no-repeat;color:var(--olive);text-align:left;overflow:hidden}
 .journal-v2-day.has-cover{color:#fff;background-position:center;background-size:cover}
 .journal-v2-day-arrow{position:relative;z-index:2;display:grid;place-items:center;width:38px;height:38px;border:1px solid currentColor;border-radius:50%;font-size:18px;text-shadow:0 1px 6px #0008}
-.journal-v2-gallery-head{display:flex;align-items:center;justify-content:space-between;margin:18px 0 12px;color:#858b85;font-size:10px}
-.journal-v2-upload{height:48px;margin-top:12px;border:1px dashed #9da69f;border-radius:15px;display:grid;place-items:center;color:var(--olive);font-size:11px}
-.journal-v2-upload input{display:none}
-.journal-v2-cover-upload{position:relative;display:grid;place-items:center;width:100%;height:132px;box-sizing:border-box;border:1px dashed #9da69f;border-radius:22px;background:#d7ad72 url('./journal-module-texture.webp') center/cover no-repeat;color:var(--olive);overflow:hidden;font-size:11px}
-.journal-v2-cover-upload img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.journal-v2-cover-upload span{position:relative;z-index:2;padding:7px 12px;border-radius:999px;background:#17231cbd;color:#fff}
-.journal-v2-cover-upload input{display:none}
-.journal-v2-gallery{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-.journal-v2-photo{position:relative;aspect-ratio:4/5;border-radius:16px;overflow:hidden;background:#d8ddd7}
-.journal-v2-photo img{width:100%;height:100%;object-fit:cover}
-.journal-v2-photo button{position:absolute;right:7px;top:7px;width:29px;height:29px;border:0;border-radius:50%;background:#17231cbb;color:#fff;font-size:18px}
 @media(min-width:761px){.journal-v2-page{left:50%;width:min(520px,100%);transform:translateX(-50%)}}
