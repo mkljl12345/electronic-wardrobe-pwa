@@ -70,10 +70,11 @@
   <body>
     <div id="root"></div>
     <div class="landscape-easter-egg" aria-hidden="true"><img src="./landscape-easter-egg.webp" alt="" decoding="async" fetchpriority="low"></div>
+    <script src="./journal-badge-board.js"></script>
     <script src="./journal-v2.js"></script>
     <script>
       (() => {
-        const APP_VERSION = '40';
+        const APP_VERSION = '41';
         let availableVersion = '', checking = false, swRegistration = null;
         const showUpdate = () => {
           const home = document.querySelector('.seasonal-home');
