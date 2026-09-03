@@ -146,7 +146,7 @@
     node.style.top = `${badge.y}%`;
     node.style.width = `${28 * badge.scale}%`;
     node.style.zIndex = String(badge.z);
-    node.style.transform = `translate(-50%,-50%) rotate(${badge.rotation}deg)`;
+    node.style.transform = `translate(-50%,-50%) rotate(${badge.rotation}deg) translateZ(0)`;
   };
   const renderPreview = async (button, journalId, date, journalTitle) => {
     await resetOnce();
