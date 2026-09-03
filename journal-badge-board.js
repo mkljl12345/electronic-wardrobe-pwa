@@ -91,6 +91,14 @@
   };
   const seedJejuApril22 = async (record, journalTitle, date) => {
     if (journalTitle !== "济州岛" || date !== "2026-04-22") return record;
+    const systemIds = new Set(["jeju-april22-1", "jeju-april22-2"]);
+    const withoutUploadedBadges = record.badges.filter((badge) =>
+      systemIds.has(badge.id),
+    );
+    if (withoutUploadedBadges.length !== record.badges.length) {
+      record.badges = withoutUploadedBadges;
+      await save(record);
+    }
     const existing = new Set(record.badges.map((badge) => badge.id));
     const missing = JEJU_APRIL22_BADGES.map((src, index) => ({
       src,
@@ -184,28 +192,6 @@
     node.style.width = `${28 * badge.scale}%`;
     node.style.zIndex = String(badge.z);
     node.style.transform = `translate(-50%,-50%) rotate(${badge.rotation}deg) translateZ(0)`;
-  };
-  const renderPreview = async (button, journalId, date, journalTitle) => {
-    await resetOnce();
-    let record = await load(journalId, date);
-    try {
-      record = await seedPresetBadges(record, journalTitle, date);
-    } catch (error) {
-      console.warn("无法载入预置徽章", error);
-    }
-    if (!record.badges.length || !button.isConnected) return;
-    const layer = document.createElement("span");
-    layer.className = "journal-badge-preview";
-    record.badges
-      .slice()
-      .sort((a, b) => a.z - b.z)
-      .forEach((badge) => {
-        const image = document.createElement("img");
-        image.src = objectURL(badge.image);
-        styleBadge(image, badge);
-        layer.appendChild(image);
-      });
-    button.prepend(layer);
   };
   const removeBackground = (canvas) => {
     const context = canvas.getContext("2d", { willReadFrequently: true }),
@@ -618,5 +604,5 @@
     };
     draw();
   };
-  window.JournalBadgeBoard = { render, renderPreview, cleanup, resetOnce };
+  window.JournalBadgeBoard = { render, cleanup, resetOnce };
 })();
