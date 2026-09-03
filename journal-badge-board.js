@@ -3,6 +3,14 @@
     STORE = "days";
   const RESET_MARKER = "zhijian-journal-layout-reset-v44";
   let resetPromise = null;
+  const JEJU_APRIL22_BADGES = [
+    "./jeju-2026-04-22-badge-01.png",
+    "./jeju-2026-04-22-badge-02.png",
+  ];
+  const JEJU_APRIL22_LAYOUT = [
+    { x: 30, y: 45, scale: 1.08, rotation: -3 },
+    { x: 72, y: 58, scale: 0.96, rotation: 3 },
+  ];
   const JEJU_APRIL23_BADGES = [
     "./jeju-2026-04-23-badge-01.png",
     "./jeju-2026-04-23-badge-02.png",
@@ -81,6 +89,34 @@
       });
     return resetPromise;
   };
+  const seedJejuApril22 = async (record, journalTitle, date) => {
+    if (journalTitle !== "济州岛" || date !== "2026-04-22") return record;
+    const existing = new Set(record.badges.map((badge) => badge.id));
+    const missing = JEJU_APRIL22_BADGES.map((src, index) => ({
+      src,
+      index,
+      id: `jeju-april22-${index + 1}`,
+    })).filter((item) => !existing.has(item.id));
+    if (!missing.length) return record;
+    const blobs = await Promise.all(
+      missing.map(async (item) => {
+        const response = await fetch(item.src);
+        if (!response.ok) throw new Error(`badge ${item.index + 1}`);
+        return response.blob();
+      }),
+    );
+    let z = Math.max(0, ...record.badges.map((value) => value.z));
+    missing.forEach((item, position) =>
+      record.badges.push({
+        id: item.id,
+        image: blobs[position],
+        ...JEJU_APRIL22_LAYOUT[item.index],
+        z: ++z,
+      }),
+    );
+    await save(record);
+    return record;
+  };
   const seedJejuApril23 = async (record, journalTitle, date) => {
     if (journalTitle !== "济州岛" || date !== "2026-04-23") return record;
     const existing = new Set(record.badges.map((badge) => badge.id));
@@ -138,6 +174,7 @@
     return record;
   };
   const seedPresetBadges = async (record, journalTitle, date) => {
+    record = await seedJejuApril22(record, journalTitle, date);
     record = await seedJejuApril23(record, journalTitle, date);
     return seedJejuApril24(record, journalTitle, date);
   };
