@@ -1,4 +1,4 @@
-const CACHE = "zhijian-pwa-v42";
+const CACHE = "zhijian-pwa-v43";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -20,6 +20,11 @@ const APP_SHELL = [
   "./jeju-2026-04-23-badge-05.png",
   "./jeju-2026-04-23-badge-06.png",
   "./jeju-2026-04-23-badge-07.png",
+  "./jeju-2026-04-24-badge-01.png",
+  "./jeju-2026-04-24-badge-02.png",
+  "./jeju-2026-04-24-badge-03.png",
+  "./jeju-2026-04-24-badge-04.png",
+  "./jeju-2026-04-24-badge-05.png",
   "./home-collage.webp",
   "./home-collage-2.webp",
   "./home-river-terminal.webp",
