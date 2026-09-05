@@ -103,7 +103,7 @@
   };
   const seedJejuApril22 = async (record, journalTitle, date) => {
     if (journalTitle !== "济州岛" || date !== "2026-04-22") return record;
-    const systemIds = new Set(["jeju-april22-1", "jeju-april22-2"]);
+    const systemIds = new Set(["jeju-april22-1-v2", "jeju-april22-2"]);
     const withoutUploadedBadges = record.badges.filter((badge) =>
       systemIds.has(badge.id),
     );
@@ -115,7 +115,7 @@
     const missing = JEJU_APRIL22_BADGES.map((src, index) => ({
       src,
       index,
-      id: `jeju-april22-${index + 1}`,
+      id: index === 0 ? "jeju-april22-1-v2" : "jeju-april22-2",
     })).filter((item) => !existing.has(item.id));
     if (!missing.length) return record;
     const blobs = await Promise.all(
