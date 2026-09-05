@@ -43,6 +43,34 @@
     { x: 32, y: 70, scale: 0.9, rotation: 0 },
     { x: 69, y: 70, scale: 0.9, rotation: 0 },
   ];
+  const JEJU_APRIL25_BADGES = [
+    "./jeju-2026-04-25-badge-01.png",
+    "./jeju-2026-04-25-badge-02.png",
+    "./jeju-2026-04-25-badge-03.png",
+    "./jeju-2026-04-25-badge-04.png",
+    "./jeju-2026-04-25-badge-05.png",
+    "./jeju-2026-04-25-badge-06.png",
+    "./jeju-2026-04-25-badge-07.png",
+    "./jeju-2026-04-25-badge-08.png",
+    "./jeju-2026-04-25-badge-09.png",
+    "./jeju-2026-04-25-badge-10.png",
+    "./jeju-2026-04-25-badge-11.png",
+    "./jeju-2026-04-25-badge-12.png",
+  ];
+  const JEJU_APRIL25_LAYOUT = [
+    { x: 18, y: 16, scale: 0.68, rotation: -2 },
+    { x: 50, y: 16, scale: 0.68, rotation: 1 },
+    { x: 82, y: 16, scale: 0.68, rotation: 2 },
+    { x: 18, y: 39, scale: 0.68, rotation: 1 },
+    { x: 50, y: 39, scale: 0.68, rotation: -1 },
+    { x: 82, y: 39, scale: 0.68, rotation: 2 },
+    { x: 18, y: 62, scale: 0.68, rotation: -2 },
+    { x: 50, y: 62, scale: 0.68, rotation: 1 },
+    { x: 82, y: 62, scale: 0.68, rotation: -1 },
+    { x: 18, y: 85, scale: 0.68, rotation: 1 },
+    { x: 50, y: 85, scale: 0.68, rotation: -1 },
+    { x: 82, y: 85, scale: 0.68, rotation: 2 },
+  ];
   const JEJU_APRIL26_BADGES = [
     "./jeju-2026-04-26-badge-01.png",
     "./jeju-2026-04-26-badge-02.png",
@@ -193,6 +221,34 @@
     await save(record);
     return record;
   };
+  const seedJejuApril25 = async (record, journalTitle, date) => {
+    if (journalTitle !== "济州岛" || date !== "2026-04-25") return record;
+    const existing = new Set(record.badges.map((badge) => badge.id));
+    const missing = JEJU_APRIL25_BADGES.map((src, index) => ({
+      src,
+      index,
+      id: `jeju-april25-${index + 1}`,
+    })).filter((item) => !existing.has(item.id));
+    if (!missing.length) return record;
+    const blobs = await Promise.all(
+      missing.map(async (item) => {
+        const response = await fetch(item.src);
+        if (!response.ok) throw new Error(`badge ${item.index + 1}`);
+        return response.blob();
+      }),
+    );
+    let z = Math.max(0, ...record.badges.map((value) => value.z));
+    missing.forEach((item, position) =>
+      record.badges.push({
+        id: item.id,
+        image: blobs[position],
+        ...JEJU_APRIL25_LAYOUT[item.index],
+        z: ++z,
+      }),
+    );
+    await save(record);
+    return record;
+  };
   const seedJejuApril26 = async (record, journalTitle, date) => {
     if (journalTitle !== "济州岛" || date !== "2026-04-26") return record;
     const existing = new Set(record.badges.map((badge) => badge.id));
@@ -225,6 +281,7 @@
     record = await seedJejuApril22(record, journalTitle, date);
     record = await seedJejuApril23(record, journalTitle, date);
     record = await seedJejuApril24(record, journalTitle, date);
+    record = await seedJejuApril25(record, journalTitle, date);
     return seedJejuApril26(record, journalTitle, date);
   };
   const styleBadge = (node, badge) => {
