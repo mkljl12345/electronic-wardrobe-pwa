@@ -406,7 +406,7 @@
     <script src="./journal-v2.js"></script>
     <script>
       (() => {
-        const APP_VERSION = "55";
+        const APP_VERSION = "56";
         const UPDATE_TARGET_KEY = "zhijian-pwa-update-target";
         const UPDATE_READY_KEY = "zhijian-pwa-update-ready";
         let availableVersion = "",
@@ -661,18 +661,39 @@
           "./home-river-terminal.webp",
           "./home-riverbank-walk.webp",
         ];
-        const getLibrary = () => [
-          ...builtins,
-          ...JSON.parse(localStorage.getItem("zhijian-opening-custom") || "[]"),
-        ];
+        const getCustomOpeningPhotos = () => {
+          try {
+            const photos = JSON.parse(
+              localStorage.getItem("zhijian-opening-custom") || "[]",
+            );
+            return Array.isArray(photos) ? photos : [];
+          } catch {
+            return [];
+          }
+        };
+        const getLibrary = () => [...builtins, ...getCustomOpeningPhotos()];
+        const RANDOM_MODE_MARKER = "zhijian-opening-random-v56";
+        if (localStorage.getItem(RANDOM_MODE_MARKER) !== "done") {
+          localStorage.setItem("zhijian-opening-mode", "rotate");
+          localStorage.setItem(RANDOM_MODE_MARKER, "done");
+        }
         const mode = localStorage.getItem("zhijian-opening-mode") || "rotate";
         const previous = Number(
           localStorage.getItem("zhijian-opening-index") || "-1",
         );
         const library = getLibrary();
+        const customCount = getCustomOpeningPhotos().length;
+        const randomIndexes = customCount
+          ? Array.from({ length: customCount }, (_, i) => builtins.length + i)
+          : library.map((_, i) => i);
+        const randomOpeningIndex = () => {
+          const choices = randomIndexes.filter((value) => value !== previous);
+          const pool = choices.length ? choices : randomIndexes;
+          return pool[Math.floor(Math.random() * pool.length)] ?? 0;
+        };
         const index =
           mode === "rotate"
-            ? (previous + 1) % library.length
+            ? randomOpeningIndex()
             : Math.min(
                 Number(localStorage.getItem("zhijian-opening-fixed") || "0"),
                 library.length - 1,
@@ -702,13 +723,51 @@
           syncOpeningMode();
           return true;
         };
+        const randomizeHomeImage = () => {
+          if (
+            (localStorage.getItem("zhijian-opening-mode") || "rotate") !==
+            "rotate"
+          )
+            return;
+          const photos = getLibrary();
+          const uploadedCount = getCustomOpeningPhotos().length;
+          const indexes = uploadedCount
+            ? Array.from(
+                { length: uploadedCount },
+                (_, i) => builtins.length + i,
+              )
+            : photos.map((_, i) => i);
+          const last = Number(
+            localStorage.getItem("zhijian-opening-index") || "-1",
+          );
+          const alternatives = indexes.filter((value) => value !== last);
+          const pool = alternatives.length ? alternatives : indexes;
+          const next = pool[Math.floor(Math.random() * pool.length)] ?? 0;
+          homeImage = photos[next];
+          localStorage.setItem("zhijian-opening-index", String(next));
+          replaceHomeImage();
+        };
+        let openingWasHidden = false;
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "hidden") {
+            openingWasHidden = true;
+            return;
+          }
+          if (openingWasHidden) {
+            openingWasHidden = false;
+            randomizeHomeImage();
+          }
+        });
+        window.addEventListener("pageshow", (event) => {
+          if (event.persisted) randomizeHomeImage();
+        });
         const renderSettings = () => {
           const page = document.querySelector(".settings-page");
           if (!page || page.querySelector(".opening-settings")) return false;
           const section = document.createElement("section");
           section.className = "opening-settings";
           section.innerHTML =
-            '<small>OPENING PHOTO</small><h2>开屏照片</h2><p>设置首页照片的显示方式，或进入照片存储库管理图片。</p><div class="opening-mode"><button data-mode="rotate">每次轮换</button><button data-mode="fixed">固定一张</button></div><button class="opening-library-entry"><span>开屏照片存储库</span><b>→</b></button>';
+            '<small>OPENING PHOTO</small><h2>开屏照片</h2><p>设置首页照片的显示方式，或进入照片存储库管理图片。</p><div class="opening-mode"><button data-mode="rotate">每次随机</button><button data-mode="fixed">固定一张</button></div><button class="opening-library-entry"><span>开屏照片存储库</span><b>→</b></button>';
           page.appendChild(section);
           const currentMode =
             localStorage.getItem("zhijian-opening-mode") || "rotate";
