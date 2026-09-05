@@ -356,7 +356,7 @@
     remove.addEventListener("click", onDelete);
   };
   const renderPrimary = (page) => {
-    page.classList.remove("journal-v2-day-page");
+    page.classList.remove("journal-v2-day-page", "journal-v2-subpage");
     currentJournalId = "";
     currentDate = "";
     page.innerHTML = `${toolbar("日志", false)}<div class="journal-v2-list"></div><button type="button" class="journal-v2-add">＋ 新增日志</button>`;
@@ -395,6 +395,7 @@
   };
   const renderTimeline = (page) => {
     page.classList.remove("journal-v2-day-page");
+    page.classList.add("journal-v2-subpage");
     window.JournalBadgeBoard?.cleanup();
     const journal = getJournal();
     if (!journal) {
@@ -432,6 +433,7 @@
       return;
     }
     page.classList.add("journal-v2-day-page");
+    page.classList.add("journal-v2-subpage");
     page.innerHTML = toolbar(currentDate, true);
     page
       .querySelector(".journal-v2-back")
