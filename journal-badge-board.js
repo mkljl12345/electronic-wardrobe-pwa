@@ -552,6 +552,8 @@
     if (!page.classList.contains("journal-v2-day-page")) return;
     const board = document.createElement("section");
     board.className = "journal-badge-board";
+    board.addEventListener("contextmenu", (event) => event.preventDefault());
+    board.addEventListener("selectstart", (event) => event.preventDefault());
     board.innerHTML =
       '<p class="journal-badge-help">长按徽章 0.35 秒后拖动 · 双指缩放或旋转</p><div class="journal-badge-stage"></div>';
     page.appendChild(board);

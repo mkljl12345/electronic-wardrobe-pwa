@@ -406,10 +406,72 @@
     <script src="./journal-v2.js"></script>
     <script>
       (() => {
-        const APP_VERSION = "54";
+        const APP_VERSION = "55";
+        const UPDATE_TARGET_KEY = "zhijian-pwa-update-target";
+        const UPDATE_READY_KEY = "zhijian-pwa-update-ready";
         let availableVersion = "",
           checking = false,
-          swRegistration = null;
+          swRegistration = null,
+          reloading = false;
+        const clearCompletedUpdate = () => {
+          if (localStorage.getItem(UPDATE_TARGET_KEY) !== APP_VERSION) return;
+          localStorage.removeItem(UPDATE_TARGET_KEY);
+          localStorage.removeItem(UPDATE_READY_KEY);
+        };
+        clearCompletedUpdate();
+        const reloadToInstalledVersion = () => {
+          const target = localStorage.getItem(UPDATE_READY_KEY);
+          if (!target || target === APP_VERSION || reloading) return;
+          if (document.visibilityState === "hidden") return;
+          reloading = true;
+          const url = new URL(location.href);
+          url.searchParams.set("_v", target);
+          location.replace(url);
+        };
+        const requestActivation = (registration) => {
+          if (!registration) return;
+          registration.waiting?.postMessage({ type: "SKIP_WAITING" });
+          const installing = registration.installing;
+          if (!installing || installing.__zhijianWatched) return;
+          installing.__zhijianWatched = true;
+          installing.addEventListener("statechange", () => {
+            if (installing.state === "installed")
+              registration.waiting?.postMessage({ type: "SKIP_WAITING" });
+          });
+        };
+        const readControllerVersion = () =>
+          new Promise((resolve) => {
+            const controller = navigator.serviceWorker?.controller;
+            if (!controller) return resolve("");
+            const channel = new MessageChannel();
+            const timeout = window.setTimeout(() => resolve(""), 1200);
+            channel.port1.onmessage = (event) => {
+              window.clearTimeout(timeout);
+              resolve(String(event.data?.version || ""));
+            };
+            controller.postMessage({ type: "GET_VERSION" }, [channel.port2]);
+          });
+        const resumePendingUpdate = async () => {
+          const target = localStorage.getItem(UPDATE_TARGET_KEY);
+          if (!target) return;
+          if (target === APP_VERSION) {
+            clearCompletedUpdate();
+            return;
+          }
+          try {
+            const registration =
+              swRegistration ||
+              (await navigator.serviceWorker?.getRegistration());
+            if (registration && !registration.waiting && !registration.installing)
+              await registration.update();
+            requestActivation(registration);
+            const activeVersion = await readControllerVersion();
+            if (activeVersion === `zhijian-pwa-v${target}`) {
+              localStorage.setItem(UPDATE_READY_KEY, target);
+              reloadToInstalledVersion();
+            }
+          } catch {}
+        };
         const showUpdate = () => {
           const home = document.querySelector(".seasonal-home");
           if (!home) return;
@@ -421,33 +483,31 @@
           if (existing) return;
           const button = document.createElement("button");
           button.className = "pwa-update-prompt";
-          button.textContent = "更新";
+          const pending =
+            localStorage.getItem(UPDATE_TARGET_KEY) === availableVersion;
+          button.textContent = pending ? "后台更新中" : "更新";
+          button.disabled = pending;
           button.addEventListener("click", async () => {
+            const target = availableVersion;
+            if (!target) return;
+            localStorage.setItem(UPDATE_TARGET_KEY, target);
+            localStorage.removeItem(UPDATE_READY_KEY);
             button.disabled = true;
-            button.textContent = "正在更新…";
-            let reloading = false;
-            const reload = () => {
-              if (reloading) return;
-              reloading = true;
-              const url = new URL(location.href);
-              url.searchParams.set("_v", availableVersion);
-              location.replace(url);
-            };
-            navigator.serviceWorker?.addEventListener(
-              "controllerchange",
-              reload,
-              { once: true },
-            );
+            button.textContent = "后台更新中";
             try {
               const registration =
                 swRegistration ||
                 (await navigator.serviceWorker?.register("./sw.js", {
                   updateViaCache: "none",
                 }));
+              swRegistration = registration;
+              registration?.addEventListener("updatefound", () =>
+                requestActivation(registration),
+              );
+              requestActivation(registration);
               await registration?.update();
-              registration?.waiting?.postMessage({ type: "SKIP_WAITING" });
+              requestActivation(registration);
             } catch {}
-            window.setTimeout(reload, 1800);
           });
           home.appendChild(button);
         };
@@ -479,10 +539,23 @@
               );
             } catch {}
             checkVersion();
+            resumePendingUpdate();
           });
-        window.addEventListener("pageshow", checkVersion);
+        navigator.serviceWorker?.addEventListener("controllerchange", () => {
+          const target = localStorage.getItem(UPDATE_TARGET_KEY);
+          if (target) localStorage.setItem(UPDATE_READY_KEY, target);
+          reloadToInstalledVersion();
+        });
+        window.addEventListener("pageshow", () => {
+          checkVersion();
+          resumePendingUpdate();
+        });
         document.addEventListener("visibilitychange", () => {
-          if (document.visibilityState === "visible") checkVersion();
+          if (document.visibilityState === "visible") {
+            reloadToInstalledVersion();
+            checkVersion();
+            resumePendingUpdate();
+          }
         });
         window.zhijianShowUpdate = showUpdate;
       })();

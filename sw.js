@@ -1,4 +1,4 @@
-const CACHE = "zhijian-pwa-v54";
+const CACHE = "zhijian-pwa-v55";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -82,6 +82,8 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
+  if (event.data?.type === "GET_VERSION")
+    event.ports[0]?.postMessage({ version: CACHE });
 });
 
 self.addEventListener("fetch", (event) => {
