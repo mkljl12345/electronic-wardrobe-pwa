@@ -43,6 +43,18 @@
     { x: 32, y: 70, scale: 0.9, rotation: 0 },
     { x: 69, y: 70, scale: 0.9, rotation: 0 },
   ];
+  const JEJU_APRIL26_BADGES = [
+    "./jeju-2026-04-26-badge-01.png",
+    "./jeju-2026-04-26-badge-02.png",
+    "./jeju-2026-04-26-badge-03.png",
+    "./jeju-2026-04-26-badge-04.png",
+  ];
+  const JEJU_APRIL26_LAYOUT = [
+    { x: 28, y: 28, scale: 0.9, rotation: -2 },
+    { x: 72, y: 28, scale: 0.9, rotation: 2 },
+    { x: 28, y: 70, scale: 0.9, rotation: 2 },
+    { x: 72, y: 70, scale: 0.9, rotation: -2 },
+  ];
   const urls = new Set();
   const cleanup = () => {
     urls.forEach(URL.revokeObjectURL);
@@ -181,10 +193,39 @@
     await save(record);
     return record;
   };
+  const seedJejuApril26 = async (record, journalTitle, date) => {
+    if (journalTitle !== "济州岛" || date !== "2026-04-26") return record;
+    const existing = new Set(record.badges.map((badge) => badge.id));
+    const missing = JEJU_APRIL26_BADGES.map((src, index) => ({
+      src,
+      index,
+      id: `jeju-april26-${index + 1}`,
+    })).filter((item) => !existing.has(item.id));
+    if (!missing.length) return record;
+    const blobs = await Promise.all(
+      missing.map(async (item) => {
+        const response = await fetch(item.src);
+        if (!response.ok) throw new Error(`badge ${item.index + 1}`);
+        return response.blob();
+      }),
+    );
+    let z = Math.max(0, ...record.badges.map((value) => value.z));
+    missing.forEach((item, position) =>
+      record.badges.push({
+        id: item.id,
+        image: blobs[position],
+        ...JEJU_APRIL26_LAYOUT[item.index],
+        z: ++z,
+      }),
+    );
+    await save(record);
+    return record;
+  };
   const seedPresetBadges = async (record, journalTitle, date) => {
     record = await seedJejuApril22(record, journalTitle, date);
     record = await seedJejuApril23(record, journalTitle, date);
-    return seedJejuApril24(record, journalTitle, date);
+    record = await seedJejuApril24(record, journalTitle, date);
+    return seedJejuApril26(record, journalTitle, date);
   };
   const styleBadge = (node, badge) => {
     node.style.left = `${badge.x}%`;
