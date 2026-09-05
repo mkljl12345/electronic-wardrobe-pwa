@@ -37,6 +37,7 @@
     days["2026-04-23"].cover = "./jeju-2026-04-23-cover.png";
     days["2026-04-24"].cover = "./jeju-2026-04-24-cover.png";
     days["2026-04-25"].cover = "./jeju-2026-04-25-cover.png";
+    days["2026-04-26"].cover = "./jeju-2026-04-26-cover.png";
     write([
       {
         id: "journal-jeju-20260422",
@@ -185,6 +186,31 @@
         days: {
           ...journal.days,
           "2026-04-25": { ...day, cover: "./jeju-2026-04-25-cover.png" },
+        },
+      };
+      write(values);
+    }
+    localStorage.setItem(marker, "done");
+  };
+  const addJejuApril26Cover = () => {
+    const marker = "zhijian-jeju-april26-cover-v51";
+    if (localStorage.getItem(marker) === "done") return;
+    const values = read(),
+      index = values.findIndex(
+        (item) =>
+          item.id === "journal-jeju-20260422" ||
+          (item.title === "济州岛" &&
+            item.startDate === "2026-04-22" &&
+            item.endDate === "2026-04-26"),
+      );
+    if (index >= 0) {
+      const journal = values[index],
+        day = journal.days?.["2026-04-26"] || { images: [] };
+      values[index] = {
+        ...journal,
+        days: {
+          ...journal.days,
+          "2026-04-26": { ...day, cover: "./jeju-2026-04-26-cover.png" },
         },
       };
       write(values);
@@ -449,6 +475,7 @@
   const enhance = () => {
     resetJournalDataV44();
     addJejuApril25Cover();
+    addJejuApril26Cover();
     window.JournalBadgeBoard?.resetOnce();
     const site = document.querySelector(".site"),
       dock = document.querySelector(".mobile-dock");
