@@ -420,7 +420,7 @@
     <script src="./journal-v2.js"></script>
     <script>
       (() => {
-        const APP_VERSION = "57";
+        const APP_VERSION = "58";
         const UPDATE_TARGET_KEY = "zhijian-pwa-update-target";
         const UPDATE_READY_KEY = "zhijian-pwa-update-ready";
         let availableVersion = "",
@@ -787,7 +787,7 @@
             document.visibilityState === "visible" &&
             (localStorage.getItem("zhijian-opening-mode") || "rotate") ===
               "rotate";
-          if (playing) openingPlaybackTimer = window.setInterval(randomizeHomeImage, 3000);
+          if (playing) openingPlaybackTimer = window.setInterval(randomizeHomeImage, 5000);
         };
         let openingWasHidden = false;
         document.addEventListener("visibilitychange", () => {
@@ -904,6 +904,7 @@
           const dock = document.querySelector(".mobile-dock");
           if (!dock) return;
           const isPrimaryPage = [
+            ".seasonal-home.mobile-active",
             ".closet-page.mobile-active",
             ".styling-entry-page.mobile-active",
             ".travel-page.mobile-active",

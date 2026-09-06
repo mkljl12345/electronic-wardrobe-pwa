@@ -612,15 +612,17 @@
           item.addEventListener(
             "touchstart",
             (event) => {
+              event.preventDefault();
               begin(event.touches);
               if (!active) timer = setTimeout(() => promote(), 350);
             },
-            { passive: true },
+            { passive: false },
           );
           item.addEventListener(
             "touchmove",
             (event) => {
               if (!start) return;
+              event.preventDefault();
               if (!active) {
                 if (
                   event.touches.length === 1 &&
@@ -634,7 +636,6 @@
                 }
                 return;
               }
-              event.preventDefault();
               if (start.kind === "drag" && event.touches.length === 1) {
                 badge.x = Math.max(
                   0,
