@@ -1,4 +1,4 @@
-const CACHE = "zhijian-pwa-v56";
+const CACHE = "zhijian-pwa-v57";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -49,6 +49,22 @@ const APP_SHELL = [
   "./home-collage-2.webp",
   "./home-river-terminal.webp",
   "./home-riverbank-walk.webp",
+  "./01_向光游去.jpg",
+  "./02_沿江而行.jpg",
+  "./03_暮色开花.jpg",
+  "./04_湖面留金.jpg",
+  "./05_云烧起来.jpg",
+  "./06_山路施工中.jpg",
+  "./07_蕨影深处.jpg",
+  "./08_石间有水.jpg",
+  "./09_树影入水.jpg",
+  "./10_苔藓的桥.jpg",
+  "./11_地热呼吸.jpg",
+  "./exec-0ec098bb-a053-4e8d-9447-8fe277cb98c5.jpg",
+  "./exec-540ce574-b3e5-42ea-826f-c6f08e2c431b.jpg",
+  "./exec-60474fc3-13e6-457b-b579-3ac04c8e50de.jpg",
+  "./exec-9d3f3952-fa6f-4e81-9851-8d9028c3579f.jpg",
+  "./exec-e41b1bd6-eb24-445e-b5d5-3c1a43f81a08.jpg",
   "./landscape-easter-egg.webp",
   "./pwa-icon-192.png",
   "./pwa-icon-512.png",

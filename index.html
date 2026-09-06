@@ -34,6 +34,17 @@
       .seasonal-home .season-copy {
         display: none !important;
       }
+      .seasonal-home > img.opening-photo {
+        transition: opacity 460ms ease;
+      }
+      .seasonal-home > img.opening-photo.is-fading {
+        opacity: 0;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .seasonal-home > img.opening-photo {
+          transition: none;
+        }
+      }
       .opening-settings {
         margin: 34px 0 30px;
         padding-top: 28px;
@@ -301,6 +312,9 @@
           padding-left: 10px !important;
           padding-right: 10px !important;
         }
+        .mobile-dock.dock-hidden {
+          display: none !important;
+        }
       }
       @media (min-width: 761px) and (max-height: 900px) {
         .closet-page,
@@ -406,7 +420,7 @@
     <script src="./journal-v2.js"></script>
     <script>
       (() => {
-        const APP_VERSION = "56";
+        const APP_VERSION = "57";
         const UPDATE_TARGET_KEY = "zhijian-pwa-update-target";
         const UPDATE_READY_KEY = "zhijian-pwa-update-ready";
         let availableVersion = "",
@@ -656,10 +670,22 @@
           };
         }
         const builtins = [
-          "./home-collage.webp",
-          "./home-collage-2.webp",
-          "./home-river-terminal.webp",
-          "./home-riverbank-walk.webp",
+          "./01_向光游去.jpg",
+          "./02_沿江而行.jpg",
+          "./03_暮色开花.jpg",
+          "./04_湖面留金.jpg",
+          "./05_云烧起来.jpg",
+          "./06_山路施工中.jpg",
+          "./07_蕨影深处.jpg",
+          "./08_石间有水.jpg",
+          "./09_树影入水.jpg",
+          "./10_苔藓的桥.jpg",
+          "./11_地热呼吸.jpg",
+          "./exec-0ec098bb-a053-4e8d-9447-8fe277cb98c5.jpg",
+          "./exec-540ce574-b3e5-42ea-826f-c6f08e2c431b.jpg",
+          "./exec-60474fc3-13e6-457b-b579-3ac04c8e50de.jpg",
+          "./exec-9d3f3952-fa6f-4e81-9851-8d9028c3579f.jpg",
+          "./exec-e41b1bd6-eb24-445e-b5d5-3c1a43f81a08.jpg",
         ];
         const getCustomOpeningPhotos = () => {
           try {
@@ -672,7 +698,7 @@
           }
         };
         const getLibrary = () => [...builtins, ...getCustomOpeningPhotos()];
-        const RANDOM_MODE_MARKER = "zhijian-opening-random-v56";
+        const RANDOM_MODE_MARKER = "zhijian-opening-random-v57";
         if (localStorage.getItem(RANDOM_MODE_MARKER) !== "done") {
           localStorage.setItem("zhijian-opening-mode", "rotate");
           localStorage.setItem(RANDOM_MODE_MARKER, "done");
@@ -682,10 +708,7 @@
           localStorage.getItem("zhijian-opening-index") || "-1",
         );
         const library = getLibrary();
-        const customCount = getCustomOpeningPhotos().length;
-        const randomIndexes = customCount
-          ? Array.from({ length: customCount }, (_, i) => builtins.length + i)
-          : library.map((_, i) => i);
+        const randomIndexes = library.map((_, i) => i);
         const randomOpeningIndex = () => {
           const choices = randomIndexes.filter((value) => value !== previous);
           const pool = choices.length ? choices : randomIndexes;
@@ -715,11 +738,24 @@
               ),
             );
         };
-        const replaceHomeImage = () => {
+        const replaceHomeImage = ({ fade = false } = {}) => {
           const image = document.querySelector(".seasonal-home > img");
           if (!image) return false;
-          image.src = homeImage;
-          image.alt = "复古海边拼贴";
+          image.classList.add("opening-photo");
+          const setSource = () => {
+            image.src = homeImage;
+            image.alt = "电子衣橱开屏照片";
+            if (!fade) return;
+            const reveal = () => requestAnimationFrame(() => image.classList.remove("is-fading"));
+            image.addEventListener("load", reveal, { once: true });
+            image.addEventListener("error", reveal, { once: true });
+          };
+          if (fade) {
+            image.classList.add("is-fading");
+            window.setTimeout(setSource, 460);
+          } else {
+            setSource();
+          }
           syncOpeningMode();
           return true;
         };
@@ -730,13 +766,7 @@
           )
             return;
           const photos = getLibrary();
-          const uploadedCount = getCustomOpeningPhotos().length;
-          const indexes = uploadedCount
-            ? Array.from(
-                { length: uploadedCount },
-                (_, i) => builtins.length + i,
-              )
-            : photos.map((_, i) => i);
+          const indexes = photos.map((_, i) => i);
           const last = Number(
             localStorage.getItem("zhijian-opening-index") || "-1",
           );
@@ -745,18 +775,32 @@
           const next = pool[Math.floor(Math.random() * pool.length)] ?? 0;
           homeImage = photos[next];
           localStorage.setItem("zhijian-opening-index", String(next));
-          replaceHomeImage();
+          replaceHomeImage({ fade: true });
+        };
+        let openingPlaybackTimer = null;
+        const updateOpeningPlayback = () => {
+          if (openingPlaybackTimer) {
+            window.clearInterval(openingPlaybackTimer);
+            openingPlaybackTimer = null;
+          }
+          const playing =
+            document.visibilityState === "visible" &&
+            (localStorage.getItem("zhijian-opening-mode") || "rotate") ===
+              "rotate";
+          if (playing) openingPlaybackTimer = window.setInterval(randomizeHomeImage, 3000);
         };
         let openingWasHidden = false;
         document.addEventListener("visibilitychange", () => {
           if (document.visibilityState === "hidden") {
             openingWasHidden = true;
+            updateOpeningPlayback();
             return;
           }
           if (openingWasHidden) {
             openingWasHidden = false;
             randomizeHomeImage();
           }
+          updateOpeningPlayback();
         });
         window.addEventListener("pageshow", (event) => {
           if (event.persisted) randomizeHomeImage();
@@ -789,6 +833,7 @@
                 .querySelectorAll("[data-mode]")
                 .forEach((x) => x.classList.remove("active"));
               button.classList.add("active");
+              updateOpeningPlayback();
             }),
           );
           section
@@ -812,6 +857,7 @@
               localStorage.setItem("zhijian-opening-fixed", String(i));
               homeImage = src;
               replaceHomeImage();
+              updateOpeningPlayback();
               overlay.remove();
             });
             grid.appendChild(button);
@@ -853,6 +899,17 @@
             reader.readAsDataURL(file);
           });
           document.body.appendChild(overlay);
+        };
+        const syncMobileDockVisibility = () => {
+          const dock = document.querySelector(".mobile-dock");
+          if (!dock) return;
+          const isPrimaryPage = [
+            ".closet-page.mobile-active",
+            ".styling-entry-page.mobile-active",
+            ".travel-page.mobile-active",
+            ".settings-page.mobile-active",
+          ].some((selector) => document.querySelector(selector));
+          dock.classList.toggle("dock-hidden", !isPrimaryPage);
         };
         const setReactRange = (input, value) => {
           const next = Math.max(
@@ -1184,6 +1241,7 @@
           stabilizeGarmentForm();
           enhanceGarmentEditor();
           enableCropGestures();
+          syncMobileDockVisibility();
           window.zhijianShowUpdate?.();
         });
         observer.observe(document.getElementById("root"), {
@@ -1191,6 +1249,7 @@
           subtree: true,
         });
         replaceHomeImage();
+        updateOpeningPlayback();
         renderSettings();
         window.enhanceJournalV2?.();
         returnAfterOutfitSave();
@@ -1198,6 +1257,7 @@
         stabilizeGarmentForm();
         enhanceGarmentEditor();
         enableCropGestures();
+        syncMobileDockVisibility();
         window.zhijianShowUpdate?.();
       })();
     </script>
