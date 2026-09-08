@@ -420,7 +420,7 @@
     <script src="./journal-v2.js"></script>
     <script>
       (() => {
-        const APP_VERSION = "59";
+        const APP_VERSION = "60";
         const UPDATE_TARGET_KEY = "zhijian-pwa-update-target";
         const UPDATE_READY_KEY = "zhijian-pwa-update-ready";
         let availableVersion = "",
@@ -912,6 +912,13 @@
           ].some((selector) => document.querySelector(selector));
           dock.classList.toggle("dock-hidden", !isPrimaryPage);
         };
+        let dockSyncTimer = null;
+        const scheduleMobileDockVisibility = () => {
+          window.clearTimeout(dockSyncTimer);
+          dockSyncTimer = window.setTimeout(syncMobileDockVisibility, 80);
+        };
+        document.addEventListener("click", scheduleMobileDockVisibility, true);
+        window.addEventListener("popstate", scheduleMobileDockVisibility);
         const setReactRange = (input, value) => {
           const next = Math.max(
             Number(input.min),
@@ -1248,8 +1255,6 @@
         observer.observe(document.getElementById("root"), {
           childList: true,
           subtree: true,
-          attributes: true,
-          attributeFilter: ["class"],
         });
         replaceHomeImage();
         updateOpeningPlayback();
