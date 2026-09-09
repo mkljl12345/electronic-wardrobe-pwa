@@ -1,4 +1,4 @@
-const CACHE = "zhijian-pwa-v60";
+const CACHE = "zhijian-pwa-v61";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -72,15 +72,17 @@ const APP_SHELL = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) =>
-      Promise.all(
+    (async () => {
+      const cache = await caches.open(CACHE);
+      await Promise.allSettled(
         APP_SHELL.map(async (path) => {
           const response = await fetch(path, { cache: "reload" });
           if (!response.ok) throw new Error(`Unable to cache ${path}`);
           await cache.put(path, response);
         }),
-      ),
-    ),
+      );
+      await self.skipWaiting();
+    })(),
   );
 });
 
@@ -92,6 +94,13 @@ self.addEventListener("activate", (event) => {
         keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)),
       );
       await self.clients.claim();
+      const windows = await self.clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
+      await Promise.allSettled(
+        windows.map((client) => client.navigate(client.url)),
+      );
     })(),
   );
 });
@@ -107,6 +116,20 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (url.pathname.endsWith("/version.json")) {
     event.respondWith(fetch(event.request, { cache: "no-store" }));
+    return;
+  }
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request, { cache: "no-store" })
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put("./index.html", copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match("./index.html")),
+    );
     return;
   }
   event.respondWith(
