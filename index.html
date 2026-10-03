@@ -289,6 +289,51 @@
       .pwa-update-prompt:disabled {
         opacity: 0.72;
       }
+      .storage-warning-overlay {
+        position: fixed;
+        z-index: 3000;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: #17231c99;
+        backdrop-filter: blur(7px);
+      }
+      .storage-warning-card {
+        width: min(100%, 330px);
+        box-sizing: border-box;
+        padding: 24px 22px 20px;
+        border-radius: 22px;
+        background: #f3f0e9;
+        color: #26372d;
+        box-shadow: 0 18px 50px #0005;
+        text-align: center;
+      }
+      .storage-warning-card small {
+        color: #9a624b;
+        font-size: 9px;
+        letter-spacing: 2px;
+      }
+      .storage-warning-card h2 {
+        margin: 9px 0 10px;
+        font: 600 23px "Noto Serif SC", serif;
+      }
+      .storage-warning-card p {
+        margin: 0;
+        color: #687269;
+        font-size: 12px;
+        line-height: 1.75;
+      }
+      .storage-warning-card button {
+        width: 100%;
+        height: 44px;
+        margin-top: 18px;
+        border: 0;
+        border-radius: 13px;
+        background: #344b3d;
+        color: #fff;
+        font-size: 12px;
+      }
       @media (orientation: landscape) and (max-height: 600px) and (pointer: coarse) {
         .landscape-easter-egg {
           display: block;
@@ -420,7 +465,7 @@
     <script src="./journal-v2.js"></script>
     <script>
       (() => {
-        const APP_VERSION = "61";
+        const APP_VERSION = "62";
         const UPDATE_TARGET_KEY = "zhijian-pwa-update-target";
         const UPDATE_READY_KEY = "zhijian-pwa-update-ready";
         let availableVersion = "",
@@ -576,11 +621,56 @@
       (() => {
         const wardrobeStorageKey = "zhijian-wardrobe-v1";
         const nativeStorageSetItem = Storage.prototype.setItem;
+        const storageWarningThreshold = 4 * 1024 * 1024;
+        const storageBytesUsed = () => {
+          let bytes = 0;
+          try {
+            for (let index = 0; index < localStorage.length; index += 1) {
+              const key = localStorage.key(index) || "";
+              const value = localStorage.getItem(key) || "";
+              bytes += (key.length + value.length) * 2;
+            }
+          } catch {}
+          return bytes;
+        };
+        const showStorageWarning = (full = false) => {
+          const marker = full
+            ? "zhijian-storage-full-shown"
+            : "zhijian-storage-low-shown";
+          if (sessionStorage.getItem(marker) === "true") return;
+          sessionStorage.setItem(marker, "true");
+          document.querySelector(".storage-warning-overlay")?.remove();
+          const overlay = document.createElement("div");
+          overlay.className = "storage-warning-overlay";
+          overlay.setAttribute("role", "alertdialog");
+          overlay.setAttribute("aria-modal", "true");
+          overlay.innerHTML = `<section class="storage-warning-card">
+            <small>LOCAL STORAGE</small>
+            <h2>${full ? "本地存储空间已满" : "本地存储余量不足"}</h2>
+            <p>${
+              full
+                ? "这次新增的衣服未能保存。请不要卸载应用或清除网站数据，建议先导出备份，再整理已有图片。"
+                : "衣橱图片已接近本机浏览器的存储上限，继续添加可能无法保存。请尽快导出备份。"
+            }</p>
+            <button type="button">知道了</button>
+          </section>`;
+          overlay.querySelector("button")?.addEventListener("click", () =>
+            overlay.remove(),
+          );
+          document.body.appendChild(overlay);
+        };
         if (!window.__zhijianStorageGuard) {
           window.__zhijianStorageGuard = true;
           Storage.prototype.setItem = function (key, value) {
             try {
-              return nativeStorageSetItem.call(this, key, value);
+              const result = nativeStorageSetItem.call(this, key, value);
+              if (
+                this === localStorage &&
+                key === wardrobeStorageKey &&
+                storageBytesUsed() >= storageWarningThreshold
+              )
+                window.setTimeout(() => showStorageWarning(false), 0);
+              return result;
             } catch (error) {
               if (
                 this === localStorage &&
@@ -588,6 +678,7 @@
                 (error?.name === "QuotaExceededError" || error?.code === 22)
               ) {
                 window.__zhijianWardrobeStorageFull = true;
+                window.setTimeout(() => showStorageWarning(true), 0);
                 return;
               }
               throw error;
